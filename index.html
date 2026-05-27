@@ -1,0 +1,3594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCIC 智能门户首页 - 交互式 Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e5aa8',
+                        secondary: '#2563eb',
+                        accent: '#3b82f6',
+                        surface: '#f8fafc',
+                        muted: '#64748b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 3-Level Sidebar */
+        .sidebar-container {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            width: 260px;
+            background: #0f172a;
+            color: #94a3b8;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 40;
+            transition: width 0.3s ease;
+        }
+        .sidebar-container.collapsed {
+            width: 64px;
+        }
+        .sidebar-container.collapsed .menu-text,
+        .sidebar-container.collapsed .submenu,
+        .sidebar-container.collapsed .menu-arrow,
+        .sidebar-container.collapsed .sidebar-section-title {
+            display: none !important;
+        }
+        .sidebar-container.collapsed .menu-item {
+            justify-content: center;
+            padding: 12px;
+        }
+        .sidebar-container.collapsed .menu-icon {
+            margin: 0;
+            font-size: 12px;
+        }
+
+        /* Tooltip for collapsed */
+        .menu-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin: 2px 8px;
+        }
+        .menu-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .menu-item.active {
+            background: rgba(30, 90, 168, 0.25);
+            color: #60a5fa;
+        }
+        .menu-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .menu-text {
+            flex: 1;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .menu-arrow {
+            font-size: 10px;
+            transition: transform 0.3s;
+            margin-left: 4px;
+        }
+        .menu-arrow.open {
+            transform: rotate(90deg);
+        }
+        .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #475569;
+            padding: 16px 16px 8px;
+            margin-top: 8px;
+        }
+
+        /* Submenu Level 2 & 3 */
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            margin-left: 8px;
+        }
+        .submenu.open {
+            max-height: 800px;
+            transition: max-height 0.5s ease-in;
+        }
+        .submenu .menu-item {
+            padding: 8px 16px 8px 44px;
+            margin: 1px 8px;
+            position: relative;
+        }
+        .submenu .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .submenu .menu-item::after {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            width: 8px;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+        .submenu .menu-item:hover::before,
+        .submenu .menu-item:hover::after {
+            background: rgba(96, 165, 250, 0.4);
+        }
+
+        /* Level 3 */
+        .submenu-level3 .menu-item {
+            padding-left: 60px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .submenu-level3 .menu-item::before {
+            left: 40px;
+        }
+        .submenu-level3 .menu-item::after {
+            left: 40px;
+            width: 12px;
+        }
+
+        /* Sidebar Bottom Action */
+        .sidebar-footer {
+            position: sticky;
+            bottom: 0;
+            background: #0f172a;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 12px;
+        }
+
+        /* Tooltip */
+        .menu-tooltip {
+            position: fixed;
+            left: 70px;
+            background: #1e293b;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .menu-tooltip.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Main Layout */
+        .main-wrapper {
+            margin-left: 260px;
+            margin-top: 64px;
+            transition: margin-left 0.3s ease;
+        }
+        .main-wrapper.sidebar-collapsed {
+            margin-left: 64px;
+        }
+
+        /* Banner - Fixed Full Width */
+        .banner-section {
+            width: 100%;
+            padding: 0 24px;
+            margin-bottom: 4px;
+        }
+        .banner-carousel {
+            position: relative;
+            height: 140px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .banner-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+        }
+        .banner-slide.active { opacity: 1; }
+        .banner-content {
+            color: white;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            max-width: 600px;
+            padding: 16px 0;
+        }
+        .banner-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        .banner-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .banner-dot.active { background: white; width: 24px; border-radius: 4px; }
+
+        /* Home Toolbar */
+        .home-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            margin: 0 24px;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toolbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+        }
+        .tool-btn:hover {
+            border-color: #1e5aa8;
+            color: #1e5aa8;
+            background: #eff6ff;
+        }
+        .tool-btn.primary {
+            background: #1e5aa8;
+            color: white;
+            border-color: #1e5aa8;
+        }
+        .tool-btn.primary:hover {
+            background: #1e4a8a;
+        }
+        .col-selector {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 3px;
+            gap: 3px;
+        }
+        .col-option {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            border: none;
+            background: transparent;
+        }
+        .col-option.active {
+            background: white;
+            color: #1e5aa8;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Card Grid - Fixed Gap */
+        .card-grid {
+            display: grid;
+            gap: 24px;
+            padding: 24px;
+            align-content: start;
+        }
+        /* 布局模式控制 grid 列数 */
+        .layout-1col { grid-template-columns: 1fr; }
+        .layout-2col { grid-template-columns: repeat(2, 1fr); }
+        .layout-3col { grid-template-columns: repeat(3, 1fr); }
+
+        /* 自定义布局保持当前列数 */
+        .layout-customcol { grid-template-columns: repeat(3, 1fr); }
+        @media (max-width: 1280px) {
+            .card-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .card-grid { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
+            .home-toolbar { margin: 0 16px; padding: 0 0 12px; }
+            .banner-section { padding: 0 16px; margin-bottom: 4px; }
+        }
+
+        .card-size-small { grid-column: span 1; }
+        
+        
+
+        /* Size-based spans: small=1/3, medium=2/3, large=1 (full row) */
+        .size-small { grid-column: span 1; }
+        .size-medium { grid-column: span 2; }
+        .size-large { grid-column: span 3; }
+
+        @media (max-width: 1280px) {
+            .size-medium { grid-column: span 2; }
+            .size-large { grid-column: span 2; }
+        }
+        @media (max-width: 768px) {
+            .size-small, .size-medium, .size-large { grid-column: span 1; }
+        }
+
+
+
+        /* Portal Card */
+        .portal-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: box-shadow 0.3s, transform 0.3s, grid-column 0.3s ease;
+            min-height: 140px;
+        }
+        .portal-card:hover {
+            box-shadow: 0 8px 16px -4px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        .portal-card.dragging {
+            opacity: 0.6;
+            transform: scale(0.98);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            background: linear-gradient(to right, #fff, #fafafa);
+        }
+        .card-header:active { cursor: grabbing; }
+        .card-body {
+            padding: 16px 20px 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* News Item */
+        .news-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 0;
+            margin: 2px 0;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .news-item:hover {
+            background: #f1f5f9;
+            margin: 2px -20px;
+            padding: 10px 20px;
+            border-radius: 6px;
+        }
+        .news-item:last-child { border-bottom: none; }
+        .news-title {
+            flex: 1;
+            font-size: 13.5px;
+            color: #334155;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 12px;
+            line-height: 1.4;
+        }
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .news-date {
+            font-size: 12px;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 2px rgba(239,68,68,0.2);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 2px rgba(239,68,68,0.2); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(239,68,68,0.1); }
+        }
+
+        /* Message Center - New Design */
+        .msg-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 3px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .msg-tab {
+            flex: 1;
+            text-align: center;
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .msg-tab.active {
+            background: white;
+            color: #1e5aa8;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .msg-tab .badge {
+            margin-left: 4px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+
+        .msg-card {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .msg-card:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .msg-card.unread {
+            background: #eff6ff;
+            border-left: 3px solid #1e5aa8;
+        }
+        .msg-card.unread:hover {
+            background: #dbeafe;
+        }
+        .msg-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            color: white;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .msg-avatar.system {
+            background: linear-gradient(135deg, #dc2626, #f87171);
+        }
+        .msg-avatar.user {
+            background: linear-gradient(135deg, #1e5aa8, #3b82f6);
+        }
+        .msg-avatar.warn {
+            background: linear-gradient(135deg, #d97706, #fbbf24);
+        }
+        .msg-status-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .msg-status-badge.unread { background: #ef4444; }
+        .msg-status-badge.read { background: #10b981; }
+        .msg-status-badge.urgent { background: #f59e0b; }
+
+        .msg-content-wrap {
+            flex: 1;
+            min-width: 0;
+        }
+        .msg-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .msg-sender {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .msg-time {
+            font-size: 11px;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .msg-body-text {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 4px;
+        }
+        .msg-actions-bar {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .msg-card:hover .msg-actions-bar {
+            opacity: 1;
+        }
+        .msg-action {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .msg-action:hover {
+            background: #1e5aa8;
+            color: white;
+            border-color: #1e5aa8;
+        }
+        .msg-action.danger:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .msg-corner-tag {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .tag-urgent { background: #fee2e2; color: #dc2626; }
+        .tag-system { background: #dbeafe; color: #1d4ed8; }
+        .tag-normal { background: #f1f5f9; color: #475569; }
+
+        /* Todo Center */
+        .todo-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 3px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .todo-tab {
+            flex: 1;
+            text-align: center;
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .todo-tab.active {
+            background: white;
+            color: #1e5aa8;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 3px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .todo-item:hover {
+            background: #f1f5f9;
+            border-left-color: #1e5aa8;
+            transform: translateX(2px);
+        }
+        .todo-item.priority-high { border-left-color: #ef4444; }
+        .todo-item.priority-medium { border-left-color: #f59e0b; }
+        .todo-item.priority-low { border-left-color: #10b981; }
+        .priority-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .priority-high .priority-badge { background: #fee2e2; color: #dc2626; }
+        .priority-medium .priority-badge { background: #fef3c7; color: #b45309; }
+        .priority-low .priority-badge { background: #d1fae5; color: #059669; }
+        .todo-source {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* Notification */
+        .notif-filter {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .notif-chip {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            background: white;
+            color: #64748b;
+        }
+        .notif-chip.active {
+            background: #1e5aa8;
+            color: white;
+            border-color: #1e5aa8;
+        }
+        .notif-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .notif-item:hover { background: #f8fafc; }
+        .notif-item.unread { background: #eff6ff; border-left: 3px solid #1e5aa8; margin-left: 0; padding-left: 10px; }
+        .notif-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+        .notif-title-row {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .notif-desc {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        .notif-foot {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Quick Systems */
+        .sys-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .sys-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 4px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .sys-item:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        .sys-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .sys-item:hover .sys-icon {
+            transform: scale(1.1);
+        }
+        .sys-name {
+            font-size: 11px;
+            color: #475569;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Sub Tabs */
+        .sub-tabs {
+            display: flex;
+            gap: 16px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 4px;
+            overflow-x: auto;
+        }
+        .sub-tab {
+            padding: 8px 2px;
+            font-size: 13px;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .sub-tab.active {
+            color: #1e5aa8;
+            border-bottom-color: #1e5aa8;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            right: -420px;
+            top: 0;
+            width: 420px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .settings-panel.open { right: 0; }
+        .settings-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 1999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .settings-overlay.open { opacity: 1; visibility: visible; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 440px;
+            width: 90%;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.3s;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
+
+        /* Card Menu */
+        .card-menu { position: relative; }
+        .card-menu-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+        .card-menu-btn:hover {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .card-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 4px);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            min-width: 160px;
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+        }
+        .card-menu.open .card-dropdown { display: block; }
+        .dropdown-item {
+            padding: 10px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dropdown-item:hover { background: #f8fafc; }
+        .dropdown-item.active-unit { background: #eff6ff; }
+        .dropdown-item.delete { color: #ef4444; }
+        .dropdown-item.delete:hover { background: #fef2f2; }
+
+        /* Header */
+        .header-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .org-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            background: #f8fafc;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        .org-switch {
+            color: #1e5aa8;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .org-switch:hover { text-decoration: underline; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .header-btn:hover { background: #f1f5f9; color: #1e293b; }
+        .header-btn .red-dot {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* User Dropdown */
+        .user-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px 4px 4px;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .user-trigger:hover { background: #f8fafc; border-color: #e2e8f0; }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e5aa8, #60a5fa);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .dropdown-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s;
+            z-index: 100;
+            overflow: hidden;
+        }
+        .has-dropdown:hover .dropdown-panel,
+        .dropdown-panel:hover {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-enter { animation: slideUp 0.4s ease forwards; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin { animation: spin 1s linear infinite; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 4000;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Archive search in msg center */
+        .archive-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .archive-bar input {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+        }
+        .archive-bar input:focus {
+            border-color: #1e5aa8;
+            box-shadow: 0 0 0 3px rgba(30,90,168,0.1);
+        }
+        .archive-bar button {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #475569;
+        }
+        .archive-bar button:hover { background: #e2e8f0; }
+        /* Org Switch Animation */
+        .org-switch-active {
+            animation: orgSwitchPulse 0.6s ease;
+        }
+        @keyframes orgSwitchPulse {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.05); background: #eff6ff; }
+            60% { transform: scale(0.98); }
+            100% { transform: scale(1); }
+        }
+        .org-name-fade {
+            animation: orgNameFade 0.4s ease;
+        }
+        @keyframes orgNameFade {
+            0% { opacity: 0; transform: translateX(-10px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        /* Unit Toggle Animation */
+        
+        
+        .unit-toggle-knob {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+        }
+        .unit-toggle.active .unit-toggle-knob {
+            transform: translateX(20px);
+            color: #1e5aa8;
+        }
+
+        /* Card sizes - 小=1/3行, 中=1/2行, 大=满行 */
+        /* 三列布局 (默认) */
+        .layout-3col .card-size-small { grid-column: span 1; }
+        .layout-3col .card-size-medium { grid-column: span 2; }
+        .layout-3col .card-size-large { grid-column: span 3; }
+        .layout-3col .card-custom { grid-column: span var(--custom-span, 1); }
+
+        /* 双列布局 */
+        .layout-2col .card-size-small { grid-column: span 1; }
+        .layout-2col .card-size-medium { grid-column: span 1; }
+        .layout-2col .card-size-large { grid-column: span 2; }
+        .layout-2col .card-custom { grid-column: span var(--custom-span, 1); }
+
+        /* 单列布局 */
+        .layout-1col .card-size-small { grid-column: span 1; }
+        .layout-1col .card-size-medium { grid-column: span 1; }
+        .layout-1col .card-size-large { grid-column: span 1; }
+        .layout-1col .card-custom { grid-column: span 1; }
+
+        @media (max-width: 1280px) {
+            .layout-3col .card-size-medium { grid-column: span 2; }
+            .layout-3col .card-size-large { grid-column: span 2; }
+            .layout-2col .card-size-large { grid-column: span 2; }
+        }
+        @media (max-width: 768px) {
+            .card-size-small, .card-size-medium, .card-size-large, .card-custom { grid-column: span 1 !important; }
+        }
+
+        /* Custom size indicator */
+        .col-option.custom-size {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #f59e0b;
+        }
+
+        /* Card spacing enhancement */
+        .portal-card {
+            min-height: 0;
+        }
+        .card-body > *:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Smooth layout transition */
+        .card-grid {
+            transition: grid-template-columns 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .portal-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 列数切换时的卡片尺寸动画 */
+        .portal-card.size-transitioning {
+            animation: cardSizePulse 0.5s ease;
+        }
+
+        @keyframes cardSizePulse {
+            0% { transform: scale(1); }
+            30% { transform: scale(0.97); opacity: 0.8; }
+            60% { transform: scale(1.01); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* 卡片内容淡入淡出 */
+        .portal-card .card-body {
+            transition: opacity 0.3s ease;
+        }
+        .portal-card.size-transitioning .card-body {
+            opacity: 0.5;
+        }
+    
+        /* Custom card size support */
+        .card-custom {
+            grid-column: span var(--custom-span, 1);
+        }
+
+        /* Unit toggle switch */
+        .unit-toggle {
+            width: 48px;
+            height: 26px;
+            background: #e2e8f0;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            padding: 3px;
+            flex-shrink: 0;
+        }
+        .unit-toggle.active {
+            background: #1e5aa8;
+        }
+
+        /* Layout custom column class fix */
+        .layout-customcol {
+            /* Keep current grid, custom cards manage their own spans */
+        }
+        
+    
+        @media (max-width: 1280px) {
+            .layout-3col .card-size-medium { grid-column: span 2; }
+            .layout-3col .card-size-large { grid-column: span 2; }
+            .layout-3col .card-custom { grid-column: span var(--custom-span, 1); }
+            .layout-2col .card-size-large { grid-column: span 2; }
+            .layout-customcol { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .layout-1col, .layout-2col, .layout-3col, .layout-customcol { grid-template-columns: 1fr; }
+            .card-size-small, .card-size-medium, .card-size-large, .card-custom { grid-column: span 1 !important; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <!-- Tooltip for collapsed sidebar -->
+    <div id="menuTooltip" class="menu-tooltip"></div>
+
+    <!-- Header -->
+    <header class="header-bar">
+        <div class="header-left">
+            <button id="sidebarToggle" class="header-btn lg:hidden">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="brand">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABUCAYAAAAcaxDBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAVKADAAQAAAABAAAAVAAAAAC3aM1AAAAQ5ElEQVR4Ad1db1bbuBaXlADteR8ms4Ia5r3Pk66AsALol3emQB9hBYUVEFYArAA4BdpvDStougLSz+8M9axgMue1pwM41vtd2XJkx3/k4ARanxMkS1fS1c9XV1dXsuHsEVzOb8dOrb7QlEw2uWTPGOeO5MxRrMkwHPE5YJwNQOciaYAynzjjfeFL978XG/0R2cPE+EM067SPG8J7usXlsCk5XwMPjUr4AMicsz6TrDucu/nonmy7ldRbopKZARqByPw1yViriEdIqAtgBqCjX/yC9EJCnXji+B0610MdJ7MEd+qA/mv9vDlkrM0E30KX0yRxwKTsMl7r++zuD+Z5ffednWSRqmD1uiPY3K+M+S0pWRMSmg605Cf+3N/705baqQHqtM+bNY8fpEkj0nqcia7vfbu0BW9c/tJTHDxAIWrLkvltdK45RjVlYCsHVA3t4cIehtpOojMYuvLI925PqgYx0U506/z21uE12UHC8pjkTgnYSgFd2nz3GkOPOjAa2jRRMNYZfr25dLvbAPVhLkhum3O+lwAW6obtX5+vH1bFVSWAQiqdmrdwnBjelTNbRafTgAXffVm/eVGFfr03oM7LizVRY8fo7EgqaWh/ue08pETmga9VAaR1y6Aj23bn9/P1UyOtdPRegC5tvt2DXuxErWJ4+3y47Z696kVpjzgSAvshrgZ45/rs5f6kbE8M6NKrt8cwd9qjhh+3VI74jMcC+3i+wxiH/g8vLk/82u0uVEBpnV8aUGIA+vI99E5Ltw/FvlulYo/qnWFkafO8A1Ax4oIL/SO9ulIW1FKAEpj8boGGSDNsd+D7csV9BGtoDcR9QmfzTUuw2nvUoeaDSUAVZRggyYzAJH3p8ec/CpiEA+l+6hNWXC7dQ9qa3Fv4QIJE9zaXNaBLry5Gqx4Cc8hX3HcvXZtGvica6pNE30xQxXD+wLYPVoCq2VyvfH5gMDVoGlTcB5OS5O3AotEU2WGhDg3tTNIr6oLO/KGGue5XWhjq1A86z2fshXu23tX3aWEuoNAdTjgJOarwDGZz0ldzt/OOX2NNDDuH+awBvf2TyTzS/2ICTuYZOJaXNs52GBd6yA/8+s3zvBVVLqCLGxcn6MxW0Bl5dH22sWN2rIo4ueBE/emqcjYL3oIJ5kxSLzrSk778JITf9epwAU5gQ2a1C5PqUNupmPl7n8/WV7JoMwGlNa8Q/FgVJL35FU+mIucGSaHy2Fs6m7OYz0tHx7p4ON37LiWpDeIXI/UKwuWoNnNGaiqgyaEOU2Kxihn9n7DzhrIGrw9bBWMNxdy0/0AY0MmODbBKErn46frNy+0kWwl9SkN/MW0UpM7yeBqd6GnA0XFfMOkB/bJ58cFnNVoUkAqZDZiECqRKcnaytHHx2fnPO3qQmZfkfBXL6bU0gsA/IY/CvIa4e6L1aox8DFAlnVpv0lD3BPTH5BeZG8JbuILuaU1eSwUlAazw/e7Sxttj6mNOjQ1ymqTl+/XbDtIHKo/LNkmtiht/xgAl6dT5NFQmlU5iGpPaVeiNmp1EauazQgAhsHz+ZeOCRkrsgvsu4HOe/xrLCG/UEJf+vs7jrLan4zqMAZqUThu9oysyQ2W7QioxvJtm+qOJazWg3I8BV6TfEVOAiqG/mMXr9fnmobGKatEelklbN2+UdEIs6ULQUZGSf8JtkMOSxR6IXHaWXp1jS5pfDiU7gACoC/ZtqoRqJqWU+9hOOaZ7IbCjy0b7ZzEJRcYyfhilzJ1EOoPlmf+dgKl6ir7ytmSMnD5OmMKkkC0dTw3nb7tIHwR5fAsju6HpIkCDvRZdKe9pAtsw0EmG9962YDodjtjQCRB5gh7vQw52fC636afufTXbdhVNevn7pWJxYYKUrCwwl8wZf6GtaaIhX8NBBDCoLn/I0An7i3Sv9Ni9JBOmjculPPWZ3yu7haKEAfzzKi2J2384QKCfhQJm/ENYL3uUD95XEaj+g4dgJYDMPymOq399tv48iBb/pScZW0UUF4lR4CH2JBvulwUxVkl4k7H5lkZamMYxGn5/s3FiElJfTWN+Eba1fogw9H+mPCWhNa/e0tIJvC/NSorigg41GPqniN7IV9vMnyvcEw9NvDaA7eCAQ2LzzWjZIoqZvJlGpkCU3BXcO/Ulu0TfW0RXG86vIThROtSXNbpRl+/PdXW8KKShjglsp4gumQ9m++QZn9Y+FAGLB7Wo9G2ycct7KYWTJCUJpNHEYMvSqg9gqiGv6HyxTKECFDOcNhMG7sW/+8mKsu7pcENWXlY6gSm/YvNrBt5+eMc68N9uZ/GSl86F1JjEyJJLUJ0pebBk5aQXtP7EsM91TenCFJIhrJ6SmVgQj8CsyGtV0FyUHfOcRanFEa0X0ygx9K+gP5tmHjmRRN2rR4mcyY8mQV5cpiy78uihGmiv5kVVLsDcthKZ2Eg8YdLfTSQX3xrYJInhex2XfCxZcZK6FgHqi9pVsmDaPelOSHMrLS8r7aE39WjJ6Hs3i2V+7IuXqf6C3V6ykUcXLVnrULCOWmhSuif+GGVnx2AVNAGo/YWjg7PQmUUMVX2MknQ0hv4qD4c+LVnr2LPBUgtHp3HZTkiSiRbIra+yCwWqmLZG6jidrBsxtzVohGDGdSmP5gD2d4Z/9QkbmHajrkuHVDam8nwx0C8+qHpBmFee6qGhzwVXIxsrOad+fVF+n4iehLWElpBO6oTwnrwGmzvELGboU2zWqWEnbufXljYvnmE1NYDyd5C9gh9jfz9psLrnwJV2oCUFqQOfDbfZrXARHxu25MDhtP3isRaOq/fUaWo+/AuODgcSdwDTZ+DfwTENnU914Zd50dDHRt4ubeTBWnKipWdmiZQMHwXhO7S6/Brv2hDSEXJ+x98rFUSObXWQYt1NlqVtCmJcp4eqxEU6FiS8SelgrQ/zZqxdPDDaxX2PR0U7qnRScCVthYa6sGPB1yy7yEg/h0PfUXaoZs42BJiOLS0T3z4W0VJHhcejlU3eBKZ2Xn3ZK6ozmU/SDzCpDQU6pLmTBiaVI92Ix3KUrCPvXnp8G0+yURrQrO2BjMZydZguEy4QGnQPqegVTWD+19vSJhCpEkOyB0XuSdr6KeJD80+hooU3X2DzasfMqDSON96K6iPJAYgtTQdb+JOOZ4WT2bKjzTe018+qW6eXAVOXoaEvGNajNOR04sxDmlRmcMHFNpN2BBoa4Mje8VT6BF1LEphXdygJA02T5pTQefcKMQnp8tCfTR2vOlQ6FA20bId+6aGQs3wbdWY0AcAPuVz0EEbl7GPKSzQib6RtAY+yJ48JoZ9ciaEPqXZtmxRMrBXRJmZVHCJ4updVhpwytLeelZ+VHnqJ9nU+2a1ZD45U4NLGuwNNmxdSHXSIg35UhpsHwqCsrbxNMLBhy7FCoEJGMo+tJBkN9rXCl7PoQXMBJX+nJinJhSMlTnZg0sIrO4fmxESd4t6T95jQWrrNmi9X9KrHbIckk/bTaVTCpBhvYwh1IPgzLB52bUajs36MVyEXroI25BEnIxYG8Ugicg5CacbGyuiMzFDuB1KYSRDLALDolA8jWYS6rvYnXqz9RM4KE0gqpMw4rJRiFegbLCWzjqyH5Zp48fYZY8Of4XOnNv5AG71kG7q6tPCXzTdYAKhz+WTz7XLnFU7ZyWCPWRcoOlSbODili+WF1lKaV8ljzDOFC8vdlTq7Ez1Wx2A3Liz2j3H73EiKRUkfYdgPkNiIZWTfkBOb6nyRTTLdHFILpiPEbI3UiXmv48PabbfIOQK/xnKEHs6lQpUwBnD+RJAAJ3+Ymk9GM1Ac3u8tteL60ylokgmXnU46RUoq9Cv2vBZTcmJJBnZqt1iZTXAUXBpUJHm4+J7SZcHN2F/al0ZiSDuWnZEgO2mHtDKIK0meCEy0DEnrFDFgnofC5nyf6LUdqm5UBXjdmXQBQD7F0M80LYKhMLIfixrX+TC56Kzmjr6fZjgpmDT7F631iW/fMAm1V00B6s/dnOiOocOrpCOxDdtWZ8lzZJBmbnKD6bLWIWcHtq+pWNeZIDROADqJrMJb8nYVEoEgMONCytCrpnQoJcGf9wE3LYrn7fZRvnlNMONHxaHMK3tPXVdKk486fDHBeYGgjvy5I2rHsD8B7OXn85drlKcklCLwcUZ6VHjz1kMyXIEcUR1lLzzAJmb/z7TyCfVR2SoiegIyPC39GUPWmv+oAkQw2jCxbHTMtKw45wtRG4JJWuioK5JQ9WTROaQ28BvgfNPPAYndX1PC7UqkUCn1wXtYz1/afNhKfUBrbr4FZbYs7/v9J7Sd59g2uSWsovNcKGdaAxGgVACm0CFk9TXFIbFtG8VMtHSpRvCiKUldkFLJ3wFqcVEnhdEFPe9AChtIoN/9rxJgUmOxgxPYM7s+H701Eg15IsRRwi6FdEG/dVTE8g/N+vR+OelFyyI2ZAQYbVm3zB+Yc5BeDZh4WL6UL2zW7Zph7Dft6XhyRzcGKOlDMN5TxJCCsjajBhXlowejG36UIUlmyVfUAweOeqCQuvHzBjFAqdOm3xBD65CGchkwCFTo3xeoab9MuVnT0gRkqzM1b8DCyZNOohsDVEkpjPqwklzfpG4oLaTZEk9/cSI7Na3CStPk0SQnADERYXs5WzqJRZ7GJ7m2RF2Sj09JJ62cAvMojbo4jdb9sNW2ImaKi0yHgob4hF/tIekkE08xljOJjUkoFVAK2njBScjacdmhbyKiVlRq9SH3H0hiB6SC1AvAmCdM3mzi1HdyrmhaSGEnaxJLlVBdMGZbSnF4ff7brs6bNFSOXeG3SBdNXWIhSbD/TpMe/rK80+dBMLnsqHIJMylZVy6gyaGPSiv9nJDajpC1NpharhDcAaMzUXhv/j5qSgMVe5EtZ6hr+lxAiShmxOK+yJuvKy4basmFDmpKwX8FY03UoXR4Tl0DmHkuDpD11fdH/eHHrC2PnDoys+i8FY4I0VyiLticL9y36119nxYWAkqFzBUUbgs/E5HW0KRp+qOrsfKe5+II46DM3k+svMVNOAlFEzPpYJt1vhWg1D706QmItxQvJPpz6qtbrrr/wf4QmHEPv/3nQVJn+TR8sKzcwfDqqzzYYvSKNDWcRvs9p42DybqQzB3bPlkDqpeVMVDxCnfeNoktE4+FLtCZo2+LqNXUl5vtMvxZA0qVjoGKSQMferma1ZZGmY6VpaXZPJyA1EQIwemp1VTJV4CsdajJIIaF3hZei9Jhp/pz3+gr3IMo7TuIqL4kvhkNME+x/dOehP2JANUNjW0lf2eTFe0S4Cs9x3Eb2G421xgkw3sBSpWFduoBomqoqAYCaT2CtLrq/pH9SZNKsEgvOuBTbOWXpmb37g0oVUZG+djbv5BWVG71vSSToWnHw5VPB+1EAqD0Jc7IZ63Py/BUCaC6wVAFvDaZxXL1wYENdP7TLSn9nfjwxtbKY/zsugaUwlBayW+4ZaYTsPAW9mbx7yN0u8F39Z6AD/XeUySRQf50vhldqYTqjlCYCSzy0GgPb+N1a1h7p53hNOspGw9AxMcJM76rV+XwTuNtaoDqxvKAVTSkEvAvewBwjw7Xelin276TqbaR1f9hEnjDLvdfCQUeKL/cqzK6D2XCqQOqmSFgcYi2hfNSW2i0pdMzQ/VRl/FjPpCwBkS8ARXiZJYNM0ga1WuHX76dTtORYvIxM0DNRjW4WGWtIr2FX0K/mdSl4phkZNcX7CP7H852llzllGopg/hBAE3yovwB0RFw9WIuSaGDwxYEdAxs7MS6qjypCinhkS//f5iS7Vd5/3+lBD+GaBPW8QAAAABJRU5ErkJggg==" alt="CIC" class="brand-logo-img" style="width:32px;height:32px;object-fit:contain;">
+                <h1 class="font-bold text-lg text-slate-800 hidden sm:block" data-i18n="brand.title">中检集团智能门户</h1>
+            </div>
+            <div class="h-5 w-px bg-slate-200 hidden md:block"></div>
+            <div class="org-display hidden md:flex" onclick="switchOrg()" style="cursor:pointer;">
+                <i class="fas fa-building text-primary text-xs"></i>
+                <span class="font-medium truncate max-w-[200px]" data-i18n="org.name">中检简诺（大连）数据科技有限公司</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="has-dropdown relative">
+                <button class="header-btn" title="切换语言" id="langToggleBtn">
+                    <i class="fas fa-globe"></i>
+                    <span class="text-[10px] font-bold ml-0.5" id="currentLangBadge">中</span>
+                </button>
+                <div class="dropdown-panel w-44">
+                    <div class="p-2">
+                        <div class="dropdown-item active" onclick="switchLang('zh')" id="langOptZh">
+                            <span class="w-5 text-center mr-1">🇨🇳</span> 简体中文
+                        </div>
+                        <div class="dropdown-item" onclick="switchLang('en')" id="langOptEn">
+                            <span class="w-5 text-center mr-1">🇺🇸</span> English
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="header-btn hidden sm:flex" onclick="openAppModal()" title="下载APP">
+                <i class="fas fa-mobile-alt"></i>
+            </button>
+
+            <div class="has-dropdown relative">
+                <button class="header-btn" title="消息">
+                    <i class="fas fa-bell"></i>
+                    <span class="red-dot"></span>
+                </button>
+                <div class="dropdown-panel w-80">
+                    <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                        <span class="font-bold text-sm" data-i18n="notif.title">消息通知</span>
+                        <button class="text-xs text-primary font-medium hover:underline" onclick="markAllRead()" data-i18n="notif.readall">一键已读</button>
+                    </div>
+                    <div class="max-h-80 overflow-y-auto p-2">
+                        <div class="notif-item unread">
+                            <div class="notif-icon-box bg-blue-100 text-blue-600"><i class="fas fa-file-alt"></i></div>
+                            <div class="flex-1">
+                                <div class="notif-title-row">待办任务提醒 <span class="unread-dot"></span></div>
+                                <div class="notif-desc">您有3条待办任务即将逾期，请及时处理</div>
+                                <div class="notif-foot">系统通知 · 10分钟前</div>
+                            </div>
+                        </div>
+                        <div class="notif-item">
+                            <div class="notif-icon-box bg-green-100 text-green-600"><i class="fas fa-check-circle"></i></div>
+                            <div class="flex-1">
+                                <div class="notif-title-row">审批通过</div>
+                                <div class="notif-desc">您的出差申请已通过审批</div>
+                                <div class="notif-foot">业务通知 · 2小时前</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><div class="has-dropdown relative ml-1">
+                <div class="user-trigger">
+                    <div class="user-avatar">杨</div>
+                    <div class="hidden md:block">
+                        <div class="text-sm font-semibold leading-tight">杨倩</div>
+                        <div class="text-xs text-slate-500 leading-tight" data-i18n="user.role">管理员</div>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs text-slate-400 hidden md:block"></i>
+                </div>
+                <div class="dropdown-panel">
+                    <div class="p-4 border-b border-slate-100 bg-slate-50">
+                        <div class="font-bold">杨倩</div>
+                        <div class="text-xs text-slate-500">中检简诺（大连）数据科技有限公司</div>
+                        <div class="text-xs text-slate-400 mt-1" data-i18n="user.dept">管理员 | 技术部</div>
+                    </div>
+                    <div class="p-2">
+                        <div class="dropdown-item" data-i18n="user.profile"><i class="fas fa-user text-slate-400 w-4"></i>个人中心</div>
+                        <div class="dropdown-item" data-i18n="user.settings"><i class="fas fa-cog text-slate-400 w-4"></i>账号设置</div>
+                        <div class="dropdown-item" data-i18n="user.security"><i class="fas fa-shield-alt text-slate-400 w-4"></i>安全中心</div>
+                        <div class="border-t border-slate-100 my-1"></div>
+                        <div class="dropdown-item delete" data-i18n="user.logout"><i class="fas fa-sign-out-alt w-4"></i>退出登录</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="pt-4 pb-2">
+            <div class="sidebar-section-title" data-i18n="sidebar.office">办公协同</div>
+            <nav>
+                <div class="menu-item active" onclick="selectMenu(this)">
+                    <i class="fas fa-home menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.home">首页</span>
+                </div>
+                <div class="menu-item" onclick="toggleSubmenu(this)">
+                    <i class="fas fa-file-contract menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.contract">合同订单</span>
+                    <i class="fas fa-chevron-right menu-arrow ml-auto"></i>
+                </div>
+                <div class="submenu">
+                    <div class="menu-item" onclick="selectMenu(this)">
+                        <span class="menu-text" data-i18n="menu.contract.draft">合同起草</span>
+                    </div>
+                    <div class="menu-item" onclick="selectMenu(this)">
+                        <span class="menu-text" data-i18n="menu.order.mgmt">订单管理</span>
+                    </div>
+                    <div class="menu-item" onclick="selectMenu(this)">
+                        <span class="menu-text" data-i18n="menu.approval">审批流程</span>
+                    </div>
+                </div>
+                <div class="menu-item" onclick="toggleSubmenu(this)">
+                    <i class="fas fa-sitemap menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.backbone">主干系统</span>
+                    <i class="fas fa-chevron-right menu-arrow ml-auto"></i>
+                </div>
+                <div class="submenu">
+                    <div class="menu-item" onclick="selectMenu(this)">
+                        <span class="menu-text" data-i18n="menu.biz.mgmt">业务管理</span>
+                    </div>
+                    <div class="menu-item" onclick="toggleSubmenu(this, true)">
+                        <span class="menu-text" data-i18n="menu.data.report">数据报表</span>
+                        <i class="fas fa-chevron-right menu-arrow ml-auto" style="font-size:9px"></i>
+                    </div>
+                    <div class="submenu submenu-level3">
+                        <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.monthly">月度报表</span></div>
+                        <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.quarterly">季度分析</span></div>
+                        <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.annual">年度汇总</span></div>
+                    </div>
+                    <div class="menu-item" onclick="selectMenu(this)">
+                        <span class="menu-text" data-i18n="menu.sys.config">系统配置</span>
+                    </div>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-database menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.sims">SIMS系统</span>
+                </div>
+                <div class="menu-item" onclick="toggleSubmenu(this)">
+                    <i class="fas fa-hard-hat menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.onsite">现场实施</span>
+                    <i class="fas fa-chevron-right menu-arrow ml-auto"></i>
+                </div>
+                <div class="submenu">
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.task.dispatch">任务派发</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.progress">进度跟踪</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.feedback">现场反馈</span></div>
+                </div>
+            </nav>
+
+            <div class="sidebar-section-title" data-i18n="sidebar.management">经营管理</div>
+            <nav>
+                <div class="menu-item" onclick="toggleSubmenu(this)">
+                    <i class="fas fa-flask menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.lims">LIMS实验室</span>
+                    <i class="fas fa-chevron-right menu-arrow ml-auto"></i>
+                </div>
+                <div class="submenu">
+                    <div class="menu-item" onclick="toggleSubmenu(this, true)">
+                        <span class="menu-text" data-i18n="menu.industry.ver">行业版本</span>
+                        <i class="fas fa-chevron-right menu-arrow ml-auto" style="font-size:9px"></i>
+                    </div>
+                    <div class="submenu submenu-level3">
+                        <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.lims.petro">LIMS-石化/化工</span></div>
+                        <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.lims.food">LIMS-食品/农产品</span></div>
+                        <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.lims.env">LIMS-资源/环境</span></div>
+                    </div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.test.mgmt">检测管理</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.equip.mgmt">设备管理</span></div>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-certificate menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.cert">证书报告</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-vials menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.sample">样品管理</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-train menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.coal">陆运煤炭采信</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-section-title" data-i18n="sidebar.functions">职能管理</div>
+            <nav>
+                <div class="menu-item" onclick="toggleSubmenu(this)">
+                    <i class="fas fa-users menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.hr">人力资源</span>
+                    <i class="fas fa-chevron-right menu-arrow ml-auto"></i>
+                </div>
+                <div class="submenu">
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.org.structure">组织架构</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.employee">员工档案</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.attendance">考勤管理</span></div>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-coins menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.finance">财务系统</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-handshake menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.invest">投资管理</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-section-title" data-i18n="sidebar.party">党建监督</div>
+            <nav>
+                <div class="menu-item" onclick="toggleSubmenu(this)">
+                    <i class="fas fa-flag menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.party.mgmt">党建管理</span>
+                    <i class="fas fa-chevron-right menu-arrow ml-auto"></i>
+                </div>
+                <div class="submenu">
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.central.spirit">中央精神</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.rules">制度规范</span></div>
+                    <div class="menu-item" onclick="selectMenu(this)"><span class="menu-text" data-i18n="menu.study">学习教育</span></div>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-eye menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.supervision">监督管理</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-exclamation-triangle menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.report.violation">违纪举报</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-section-title" data-i18n="sidebar.support">支撑平台</div>
+            <nav>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-chart-bar menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.stats">统计分析</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-th-large menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.app.center">应用中心</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this)">
+                    <i class="fas fa-question-circle menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.help">帮助中心</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer: Home Layout Settings Entry -->
+        <div class="sidebar-footer">
+            <div class="menu-item" onclick="toggleSettings()" style="color:#94a3b8;">
+                <i class="fas fa-th-large menu-icon"></i>
+                <span class="menu-text" data-i18n="menu.layout.settings">首页布局设置</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="main-wrapper">
+
+        <!-- Banner Section: Fixed, outside sortable grid -->
+        <div class="banner-section">
+            <div class="banner-carousel">
+                <div class="banner-slide active" style="background: linear-gradient(105deg, rgba(12,74,156,0.88) 0%, rgba(30,90,168,0.85) 50%, rgba(59,130,246,0.82) 100%), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80'); background-size: cover; background-position: center; background-blend-mode: multiply;">
+                    <div class="banner-content animate-enter">
+                        <div class="inline-block px-3 py-0.5 bg-white/20 backdrop-blur rounded-full text-[11px] font-medium mb-1.5" data-i18n="banner.vision">愿景 Vision</div>
+                        <h2 class="text-[22px] font-bold mb-1 tracking-tight leading-tight" data-i18n="banner.vision.title">全球质量服务的引领者</h2>
+                        <p class="text-sm opacity-80 font-light" data-i18n="banner.vision.sub">A Global Leader in Quality Service</p>
+                    </div>
+                </div>
+                <div class="banner-slide" style="background: linear-gradient(105deg, rgba(15,23,42,0.9) 0%, rgba(30,58,95,0.87) 50%, rgba(30,90,168,0.84) 100%), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=80'); background-size: cover; background-position: center; background-blend-mode: multiply;">
+                    <div class="banner-content">
+                        <div class="inline-block px-3 py-0.5 bg-white/20 backdrop-blur rounded-full text-[11px] font-medium mb-1.5" data-i18n="banner.mission">使命 Mission</div>
+                        <h2 class="text-[22px] font-bold mb-1 tracking-tight leading-tight" data-i18n="banner.mission.title">创造更值得信赖的世界</h2>
+                        <p class="text-sm opacity-80 font-light" data-i18n="banner.mission.sub">Creating a More Trustworthy World</p>
+                    </div>
+                </div>
+                <div class="banner-slide" style="background: linear-gradient(105deg, rgba(30,64,175,0.88) 0%, rgba(59,130,246,0.85) 50%, rgba(96,165,250,0.82) 100%), url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80'); background-size: cover; background-position: center; background-blend-mode: multiply;">
+                    <div class="banner-content">
+                        <div class="inline-block px-3 py-0.5 bg-white/20 backdrop-blur rounded-full text-[11px] font-medium mb-1.5" data-i18n="banner.digital">数字化转型</div>
+                        <h2 class="text-[22px] font-bold mb-1 tracking-tight leading-tight" data-i18n="banner.digital.title">智慧中检 · 数字赋能</h2>
+                        <p class="text-sm opacity-80 font-light" data-i18n="banner.digital.sub">推动集团高质量发展新征程</p>
+                    </div>
+                </div>
+                <div class="banner-dots">
+                    <div class="banner-dot active" onclick="goToSlide(0)"></div>
+                    <div class="banner-dot" onclick="goToSlide(1)"></div>
+                    <div class="banner-dot" onclick="goToSlide(2)"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Toolbar: Layout controls exclusive to homepage -->
+        <div class="home-toolbar">
+            <div class="toolbar-left">
+                <div class="toolbar-title">
+                    <i class="fas fa-compass text-primary"></i>
+                    <span data-i18n="toolbar.workspace">我的工作台</span>
+                </div>
+                <span class="text-xs text-slate-400 hidden sm:inline" data-i18n="toolbar.drag.hint">拖拽卡片头部可调整顺序</span>
+            </div>
+            <div class="toolbar-actions">
+                <div class="col-selector">
+                    <button class="col-option" onclick="setLayoutCols(1)" id="colBtn1" data-i18n="layout.single">单列</button>
+                    <button class="col-option" onclick="setLayoutCols(2)" id="colBtn2" data-i18n="layout.double">双列</button>
+                    <button class="col-option active" onclick="setLayoutCols(3)" id="colBtn3" data-i18n="layout.triple">三列</button>
+                    <button class="col-option" onclick="setLayoutCols('custom')" id="colBtnCustom" data-i18n="layout.custom">自定义</button>
+                </div>
+                <button class="tool-btn" onclick="toggleSettings()">
+                    <i class="fas fa-sliders-h"></i>
+                    <span class="hidden sm:inline" data-i18n="toolbar.layout">布局设置</span>
+                </button>
+                <button class="tool-btn primary" onclick="openAddCardModal()">
+                    <i class="fas fa-plus"></i>
+                    <span class="hidden sm:inline" data-i18n="toolbar.add">添加卡片</span>
+                </button>
+                <button class="tool-btn" onclick="resetLayout()" title="恢复默认">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Card Grid: Only cards, fixed 24px gap, dense flow to avoid holes -->
+        <div id="cardGrid" class="card-grid layout-3col">
+
+            <!-- Row 1: Work Processing (3 medium cards = full row) -->
+            <div class="portal-card card-size-small" data-id="todo" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-clipboard-check text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.todo">待办中心</span>
+                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-bold">12</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="card-menu-btn" onclick="refreshCard('todo')">
+                            <i class="fas fa-sync-alt text-xs" id="refresh-todo"></i>
+                        </button>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('todo','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('todo','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('todo','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('todo','custom')" data-i18n="size.custom">自定义</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('todo')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="todo-tabs">
+                        <div class="todo-tab active" onclick="switchTodoTab(this,'unprocessed')" data-i18n="todo.unprocessed">未处理 <span class="font-bold">8</span></div>
+                        <div class="todo-tab" onclick="switchTodoTab(this,'processing')" data-i18n="todo.processing">处理中 3</div>
+                        <div class="todo-tab" onclick="switchTodoTab(this,'overdue')" data-i18n="todo.overdue">已逾期 <span class="text-red-500 font-bold">1</span></div>
+                    </div>
+                    <div id="todoList">
+                        <div class="todo-item priority-high" onclick="openTodo('出差审批')">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="priority-badge">高</span>
+                                    <span class="text-sm font-medium text-slate-700 truncate">出差审批-技术中心</span>
+                                </div>
+                                <div class="todo-source">OA系统 · 2小时前</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">未处理</span>
+                        </div>
+                        <div class="todo-item priority-high" onclick="openTodo('合同审核')">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="priority-badge">高</span>
+                                    <span class="text-sm font-medium text-slate-700 truncate">合同审核-大连港项目</span>
+                                </div>
+                                <div class="todo-source">合同系统 · 3小时前</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded font-medium">已逾期</span>
+                        </div>
+                        <div class="todo-item priority-medium" onclick="openTodo('报告审核')">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="priority-badge">中</span>
+                                    <span class="text-sm font-medium text-slate-700 truncate">检测报告审核-LIMS</span>
+                                </div>
+                                <div class="todo-source">LIMS系统 · 5小时前</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">未处理</span>
+                        </div>
+                        <div class="todo-item priority-low" onclick="openTodo('培训报名')">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="priority-badge">低</span>
+                                    <span class="text-sm font-medium text-slate-700 truncate">质量培训报名确认</span>
+                                </div>
+                                <div class="todo-source">人力系统 · 昨天</div>
+                            </div>
+                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">未处理</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="notification" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-bell text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.notification">通知中心</span>
+                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-bold">5</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="card-menu-btn" onclick="markAllRead()" title="一键已读">
+                            <i class="fas fa-check-double text-xs"></i>
+                        </button>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('notification','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('notification','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('notification','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('notification')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="notif-filter">
+                        <span class="notif-chip active" onclick="filterNotif(this,'all')" data-i18n="notif.all">全部</span>
+                        <span class="notif-chip" onclick="filterNotif(this,'system')" data-i18n="notif.system">系统</span>
+                        <span class="notif-chip" onclick="filterNotif(this,'business')" data-i18n="notif.business">业务</span>
+                        <span class="notif-chip" onclick="filterNotif(this,'announce')" data-i18n="notif.announce">公告</span>
+                    </div>
+                    <div id="notifList">
+                        <div class="notif-item unread" onclick="readNotif(this)">
+                            <div class="notif-icon-box bg-blue-100 text-blue-600"><i class="fas fa-cog"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="notif-title-row">系统维护通知 <span class="unread-dot"></span></div>
+                                <div class="notif-desc">LIMS系统将于今晚22:00-24:00进行例行维护，请提前保存数据。</div>
+                                <div class="notif-foot">系统通知 · 30分钟前</div>
+                            </div>
+                        </div>
+                        <div class="notif-item unread" onclick="readNotif(this)">
+                            <div class="notif-icon-box bg-amber-100 text-amber-600"><i class="fas fa-briefcase"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="notif-title-row">业务流程变更 <span class="unread-dot"></span></div>
+                                <div class="notif-desc">证书签发流程已优化，请查看最新操作指南并及时学习。</div>
+                                <div class="notif-foot">业务通知 · 2小时前</div>
+                            </div>
+                        </div>
+                        <div class="notif-item" onclick="readNotif(this)">
+                            <div class="notif-icon-box bg-green-100 text-green-600"><i class="fas fa-bullhorn"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="notif-title-row">端午节放假安排</div>
+                                <div class="notif-desc">2026年端午节放假时间为6月22日至24日，共3天。</div>
+                                <div class="notif-foot">公告 · 昨天</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Center: Redesigned with Internal/External tabs -->
+            <div class="portal-card card-size-small" data-id="message" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-comments text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.message">消息中心</span>
+                        <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="card-menu-btn" onclick="openArchiveSearch()" title="历史归档">
+                            <i class="fas fa-history text-xs"></i>
+                        </button>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('message','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('message','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('message','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('message')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="msg-tabs">
+                        <div class="msg-tab active" onclick="switchMsgTab(this,'internal')" data-i18n="msg.internal">
+                            内部消息 <span class="badge">2</span>
+                        </div>
+                        <div class="msg-tab" onclick="switchMsgTab(this,'external')" data-i18n="msg.external">
+                            外部预警 <span class="badge">1</span>
+                        </div>
+                    </div>
+
+                    <!-- Internal Messages -->
+                    <div id="msg-internal">
+                        <div class="msg-card unread" onclick="readMsg(this)">
+                            <div class="msg-avatar warn">
+                                <i class="fas fa-exclamation" style="font-size:16px"></i>
+                                <span class="msg-status-badge urgent"></span>
+                            </div>
+                            <div class="msg-content-wrap">
+                                <div class="msg-header-row">
+                                    <span class="msg-sender">系统预警 · 证书管理</span>
+                                    <span class="msg-time">09:45</span>
+                                </div>
+                                <div class="msg-body-text text-amber-700">【紧急预警】证书编号 CCIC2026DL001 将于7天后到期，请及时安排续期审核。</div>
+                                <div class="msg-actions-bar">
+                                    <button class="msg-action" onclick="doMsgAction(event,'reply')">标记已读</button>
+                                    <button class="msg-action" onclick="doMsgAction(event,'forward')">转发</button>
+                                    <button class="msg-action" onclick="doMsgAction(event,'mute')">免打扰</button>
+                                </div>
+                            </div>
+                            <span class="msg-corner-tag tag-urgent">紧急</span>
+                        </div>
+                        <div class="msg-card" onclick="readMsg(this)">
+                            <div class="msg-avatar system">
+                                <i class="fas fa-shield-alt" style="font-size:14px"></i>
+                            </div>
+                            <div class="msg-content-wrap">
+                                <div class="msg-header-row">
+                                    <span class="msg-sender">安全预警 · 网络安全</span>
+                                    <span class="msg-time">昨天</span>
+                                </div>
+                                <div class="msg-body-text">检测到异常登录尝试（IP: 192.168.x.x），如非本人操作请联系信息部。</div>
+                                <div class="msg-actions-bar">
+                                    <button class="msg-action" onclick="doMsgAction(event,'reply')">确认</button>
+                                    <button class="msg-action" onclick="doMsgAction(event,'forward')">上报</button>
+                                </div>
+                            </div>
+                            <span class="msg-corner-tag tag-system">系统</span>
+                        </div>
+                    </div>
+
+                    <!-- External Alerts (Hidden by default) -->
+                    <div id="msg-external" style="display:none;">
+                        <div class="msg-card unread" onclick="readMsg(this)">
+                            <div class="msg-avatar warn">
+                                <i class="fas fa-exclamation" style="font-size:16px"></i>
+                                <span class="msg-status-badge urgent"></span>
+                            </div>
+                            <div class="msg-content-wrap">
+                                <div class="msg-header-row">
+                                    <span class="msg-sender">系统预警 · 证书管理</span>
+                                    <span class="msg-time">09:45</span>
+                                </div>
+                                <div class="msg-body-text text-amber-700">【紧急预警】证书编号 CCIC2026DL001 将于7天后到期，请及时安排续期审核。</div>
+                                <div class="msg-actions-bar">
+                                    <button class="msg-action" onclick="doMsgAction(event,'reply')">标记已读</button>
+                                    <button class="msg-action" onclick="doMsgAction(event,'forward')">转发</button>
+                                    <button class="msg-action" onclick="doMsgAction(event,'mute')">免打扰</button>
+                                </div>
+                            </div>
+                            <span class="msg-corner-tag tag-urgent">紧急</span>
+                        </div>
+                        <div class="msg-card" onclick="readMsg(this)">
+                            <div class="msg-avatar system">
+                                <i class="fas fa-shield-alt" style="font-size:14px"></i>
+                            </div>
+                            <div class="msg-content-wrap">
+                                <div class="msg-header-row">
+                                    <span class="msg-sender">安全预警 · 网络安全</span>
+                                    <span class="msg-time">昨天</span>
+                                </div>
+                                <div class="msg-body-text">检测到异常登录尝试（IP: 192.168.x.x），如非本人操作请联系信息部。</div>
+                                <div class="msg-actions-bar">
+                                    <button class="msg-action" onclick="doMsgAction(event,'reply')">确认</button>
+                                    <button class="msg-action" onclick="doMsgAction(event,'forward')">上报</button>
+                                </div>
+                            </div>
+                            <span class="msg-corner-tag tag-system">系统</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Quick Access + Info (3 medium = full row) -->
+            <div class="portal-card card-size-small" data-id="quick-systems" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-th-large text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.quick.systems">常用系统</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="card-menu-btn" onclick="openAddSystem()" title="添加系统">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('quick-systems','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('quick-systems','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('quick-systems','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('quick-systems')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="sys-grid">
+                        <div class="sys-item" onclick="openSystem('OA')">
+                            <div class="sys-icon bg-blue-500"><i class="fas fa-file-alt"></i></div>
+                            <span class="sys-name" data-i18n="sys.oa">OA办公</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('LIMS')">
+                            <div class="sys-icon bg-cyan-500"><i class="fas fa-flask"></i></div>
+                            <span class="sys-name" data-i18n="sys.lims">LIMS</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('HR')">
+                            <div class="sys-icon bg-purple-500"><i class="fas fa-users"></i></div>
+                            <span class="sys-name" data-i18n="sys.hr">人力系统</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('Finance')">
+                            <div class="sys-icon bg-green-500"><i class="fas fa-coins"></i></div>
+                            <span class="sys-name" data-i18n="sys.finance">财务系统</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('Contract')">
+                            <div class="sys-icon bg-amber-500"><i class="fas fa-handshake"></i></div>
+                            <span class="sys-name" data-i18n="sys.contract">合同系统</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('Report')">
+                            <div class="sys-icon bg-red-500"><i class="fas fa-certificate"></i></div>
+                            <span class="sys-name" data-i18n="sys.report">证书报告</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('Sample')">
+                            <div class="sys-icon bg-indigo-500"><i class="fas fa-vials"></i></div>
+                            <span class="sys-name" data-i18n="sys.sample">样品管理</span>
+                        </div>
+                        <div class="sys-item" onclick="openSystem('More')">
+                            <div class="sys-icon bg-slate-400"><i class="fas fa-ellipsis-h"></i></div>
+                            <span class="sys-name" data-i18n="sys.more">更多</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="notice" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-bullhorn text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.notice">通知公告</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('notice','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('notice','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('notice','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('notice')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="news-item">
+                        <span class="news-title">严正声明</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2025-09-29</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">关于天津公司办公地址搬迁的公告</span>
+                        <div class="news-meta">
+                            <span class="news-date">2023-09-25</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">中检云南公司正式启动2023年度春季校园招聘</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2023-03-13</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">中国中检关于公开征集认证认可行业标准通知</span>
+                        <div class="news-meta">
+                            <span class="news-date">2023-02-22</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="headline" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-newspaper text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.headline">中检头条</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('headline','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('headline','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('headline','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('headline')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="news-item">
+                        <span class="news-title">中国中检召开"西部人才淬炼工程"动员部署会</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-20</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">中国中检召开"十五五"专项规划研讨评审会</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-20</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">许增德赴西南区域调研</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-05-14</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">央地合作 | 湛江市委书记余钢一行到访中国中检</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-05-14</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">中国中检召开"AI+"专项工作启发会</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-11</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Regulatory Info (3 medium = full row) -->
+            <div class="portal-card card-size-small" data-id="org-news" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-building text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.org.news">机构动态</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('org-news','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('org-news','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('org-news','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('org-news')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="news-item">
+                        <span class="news-title">中检天津公司成为上期能源20号胶期货指定检验机构</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-21</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">中检港澳台区域与中石化香港公司签署合作备忘录</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-05-19</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">中国质量认证中心成功获得亚马逊两个品类直接授权</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-19</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">斩获5项世界纪录！世界级研发验证试验室今日启用</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-05-18</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="gov-news" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-landmark text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.gov.news">国资动态</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('gov-news','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('gov-news','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('gov-news','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('gov-news')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="news-item">
+                        <span class="news-title">《习近平经济思想研究》杂志刊发张玉卓署名文章</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-08</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">《学习与研究》杂志刊发国务院国资委党委署名文章</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-05-06</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">国务院国资委召开中央企业一季度经济运行情况通报会</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-04-23</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">树立和践行正确政绩观学习教育督导组培训会议召开</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-04-09</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="internal-control" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.internal.control">"1+N"内控体系专栏</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('internal-control','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('internal-control','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('internal-control','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('internal-control')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="news-item">
+                        <span class="news-title">内控手册（2026修订版）发布通知</span>
+                        <div class="news-meta">
+                            <span class="unread-dot"></span>
+                            <span class="news-date">2026-05-15</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">关于更新风险管控清单的通知</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-04-20</span>
+                        </div>
+                    </div>
+                    <div class="news-item">
+                        <span class="news-title">2026年度内控自评工作启动通知</span>
+                        <div class="news-meta">
+                            <span class="news-date">2026-04-01</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: Party (large 2-col) + Report (medium 1-col) = 3 cols full -->
+            <div class="portal-card card-size-medium" data-id="party" data-size="medium" data-original-size="medium">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-flag text-red-600"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.party">党建专栏</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('party','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('party','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('party','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('party')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="sub-tabs">
+                        <div class="sub-tab active" onclick="switchSubTab(this,'spirit')" data-i18n="party.spirit">中央精神</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'rules')" data-i18n="party.rules">制度规范</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'study')" data-i18n="party.study">学习教育</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'guide')" data-i18n="party.guide">作业指导书</div>
+                    </div>
+                    <div class="tab-content" id="party-spirit">
+                        <div class="news-item">
+                            <span class="news-title">中共中央办公厅印发《中国共产党发展党员工作细则》</span>
+                            <div class="news-meta">
+                                <span class="unread-dot"></span>
+                                <span class="news-date">2026-05-19</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">《求是》杂志发表习近平总书记重要文章《树立和践行正确政绩观》</span>
+                            <div class="news-meta">
+                                <span class="news-date">2026-05-07</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">中华人民共和国国民经济和社会发展第十五个五年规划纲要</span>
+                            <div class="news-meta">
+                                <span class="news-date">2026-03-31</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">中共中央办公厅 国务院办公厅印发《国有企业领导人员廉洁从业规...</span>
+                            <div class="news-meta">
+                                <span class="unread-dot"></span>
+                                <span class="news-date">2026-03-25</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="report" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.report">违纪举报</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('report','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('report','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('report','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('report')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="sub-tabs">
+                        <div class="sub-tab active" onclick="switchSubTab(this,'scope')" data-i18n="report.scope">受理范围</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'notice')" data-i18n="report.notice">注意事项</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'channel')" data-i18n="report.channel">举报途径</div>
+                    </div>
+                    <div class="tab-content" id="report-scope">
+                        <div class="news-item">
+                            <span class="news-title">违反政治纪律和政治规矩问题举报</span>
+                            <div class="news-meta">
+                                <span class="news-date">2020-10-14</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">违反廉洁纪律问题举报</span>
+                            <div class="news-meta">
+                                <span class="news-date">2020-10-14</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">违反工作纪律问题举报</span>
+                            <div class="news-meta">
+                                <span class="news-date">2020-10-14</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 5: Digital (large 2-col) + Digital Notice (medium 1-col) = 3 cols full -->
+            <div class="portal-card card-size-medium" data-id="digital" data-size="medium" data-original-size="medium">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-microchip text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.digital">数字中检</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('digital','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('digital','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('digital','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('digital')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="sub-tabs">
+                        <div class="sub-tab active" onclick="switchSubTab(this,'transform')" data-i18n="digital.transform">数字化转型</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'lecture')" data-i18n="digital.lecture">大讲堂</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'wiki')" data-i18n="digital.wiki">系统百科</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'institution')" data-i18n="digital.institution">制度管理</div>
+                    </div>
+                    <div class="tab-content" id="digital-transform">
+                        <div class="news-item">
+                            <span class="news-title">软件开发类项目立项审批管理</span>
+                            <div class="news-meta">
+                                <span class="news-date">2025-11-17</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">年度信息化计划审批管理</span>
+                            <div class="news-meta">
+                                <span class="unread-dot"></span>
+                                <span class="news-date">2025-08-05</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">软件开发类项目验收管理</span>
+                            <div class="news-meta">
+                                <span class="news-date">2025-08-05</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">数据资产管理规范（试行）发布</span>
+                            <div class="news-meta">
+                                <span class="unread-dot"></span>
+                                <span class="news-date">2025-07-20</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card card-size-small" data-id="digital-notice" data-size="small" data-original-size="small">
+                <div class="card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-server text-primary"></i>
+                        <span class="font-semibold text-slate-800" data-i18n="card.digital.notice">数字中检公告</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" class="text-xs text-primary hover:underline font-medium mr-1" data-i18n="common.more">更多</a>
+                        <div class="card-menu">
+                            <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                <i class="fas fa-ellipsis-v text-xs"></i>
+                            </button>
+                            <div class="card-dropdown">
+                                <div class="dropdown-item" onclick="changeCardSize('digital-notice','small')" data-i18n="size.small">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('digital-notice','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('digital-notice','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <div class="dropdown-item delete" onclick="removeCard('digital-notice')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="sub-tabs">
+                        <div class="sub-tab active" onclick="switchSubTab(this,'update')" data-i18n="notice.update">更新公告</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'dynamic')" data-i18n="notice.dynamic">系统动态</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'standard')" data-i18n="notice.standard">标准规范</div>
+                        <div class="sub-tab" onclick="switchSubTab(this,'download')" data-i18n="notice.download">常用下载</div>
+                    </div>
+                    <div class="tab-content" id="notice-update">
+                        <div class="news-item">
+                            <span class="news-title">2026年5月19日系统版本更新</span>
+                            <div class="news-meta">
+                                <span class="unread-dot"></span>
+                                <span class="news-date">2026-05-18</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">2026年5月12日系统版本更新</span>
+                            <div class="news-meta">
+                                <span class="news-date">2026-05-11</span>
+                            </div>
+                        </div>
+                        <div class="news-item">
+                            <span class="news-title">2026年4月28日系统版本更新</span>
+                            <div class="news-meta">
+                                <span class="news-date">2026-04-27</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Settings Panel (Right Side) -->
+    <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+    <div class="settings-panel" id="settingsPanel">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div>
+                <h2 class="text-lg font-bold text-slate-800" data-i18n="settings.title">首页布局设置</h2>
+                <p class="text-xs text-slate-500 mt-1" data-i18n="settings.hint">仅对当前首页生效，无需审批</p>
+            </div>
+            <button onclick="toggleSettings()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors text-slate-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 space-y-8">
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-3" data-i18n="settings.layout.cols">布局列数</h3>
+                <div class="flex gap-3">
+                    <button onclick="setLayoutCols(1)" class="flex-1 py-3 border-2 border-slate-200 rounded-lg hover:border-primary hover:text-primary transition-all flex flex-col items-center gap-1" id="setColBtn1">
+                        <i class="fas fa-square text-lg"></i>
+                        <span class="text-xs font-medium" data-i18n="layout.single">单列</span>
+                    </button>
+                    <button onclick="setLayoutCols(2)" class="flex-1 py-3 border-2 border-slate-200 rounded-lg hover:border-primary hover:text-primary transition-all flex flex-col items-center gap-1" id="setColBtn2">
+                        <i class="fas fa-columns text-lg"></i>
+                        <span class="text-xs font-medium" data-i18n="layout.double">双列</span>
+                    </button>
+                    <button onclick="setLayoutCols(3)" class="flex-1 py-3 border-2 border-primary text-primary rounded-lg transition-all flex flex-col items-center gap-1" id="setColBtn3">
+                        <i class="fas fa-th-large text-lg"></i>
+                        <span class="text-xs font-medium" data-i18n="layout.triple">三列</span>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 mt-2" data-i18n="settings.layout.hint">切换列数时卡片会自动适配尺寸</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-3" data-i18n="settings.unit">单位设置</h3>
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    
+                    <div class="unit-toggle" id="settingsUnitToggle" onclick="toggleUnit()">
+                        <div class="unit-toggle-knob">公</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-3" data-i18n="settings.auto.refresh">自动刷新</h3>
+                <label class="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer mb-3">
+                    <span class="text-sm" data-i18n="settings.enable">启用自动刷新</span>
+                    <input type="checkbox" checked class="w-4 h-4 text-primary rounded" onchange="toggleAutoRefresh(this)">
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="py-2 text-sm border rounded-lg hover:bg-blue-50 hover:border-primary hover:text-primary transition-all" data-i18n="settings.realtime">实时</button>
+                    <button class="py-2 text-sm border border-primary text-primary bg-blue-50 rounded-lg font-medium" data-i18n="settings.5min">5分钟</button>
+                    <button class="py-2 text-sm border rounded-lg hover:bg-blue-50 hover:border-primary hover:text-primary transition-all" data-i18n="settings.15min">15分钟</button>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-3" data-i18n="settings.added.cards">已添加卡片</h3>
+                <div class="space-y-2" id="cardManagerList"></div>
+                <button onclick="openAddCardModal()" class="w-full mt-3 py-2.5 border-2 border-dashed border-slate-300 rounded-lg text-slate-500 hover:border-primary hover:text-primary transition-all text-sm font-medium">
+                    <i class="fas fa-plus mr-1"></i> 添加新卡片
+                </button>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100">
+                <button onclick="resetLayout()" class="w-full py-2.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-all text-sm font-medium">
+                    <i class="fas fa-undo mr-2"></i>恢复默认布局
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Card Modal -->
+    <div class="modal-overlay" id="addCardModal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold mb-1">添加卡片到首页</h3>
+            <p class="text-xs text-slate-500 mb-4">选择要添加的卡片类型，添加后可拖拽调整位置</p>
+            <div class="space-y-2 max-h-80 overflow-y-auto" id="availableCards">
+                <div class="p-3 border rounded-xl hover:bg-slate-50 cursor-pointer flex justify-between items-center transition-all" onclick="addCard('stats')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-chart-line"></i></div>
+                        <div>
+                            <div class="text-sm font-semibold">数据统计</div>
+                            <div class="text-xs text-slate-500">展示关键业务指标</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-plus text-slate-400"></i>
+                </div>
+                <div class="p-3 border rounded-xl hover:bg-slate-50 cursor-pointer flex justify-between items-center transition-all" onclick="addCard('weather')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-cloud-sun"></i></div>
+                        <div>
+                            <div class="text-sm font-semibold">天气信息</div>
+                            <div class="text-xs text-slate-500">当前城市天气状况</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-plus text-slate-400"></i>
+                </div>
+                <div class="p-3 border rounded-xl hover:bg-slate-50 cursor-pointer flex justify-between items-center transition-all" onclick="addCard('calendar')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fas fa-calendar-alt"></i></div>
+                        <div>
+                            <div class="text-sm font-semibold">日程安排</div>
+                            <div class="text-xs text-slate-500">今日待办日程</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-plus text-slate-400"></i>
+                </div>
+            </div>
+            <button onclick="closeAddCardModal()" class="w-full mt-4 py-2.5 bg-slate-100 rounded-lg hover:bg-slate-200 transition-all text-sm font-medium text-slate-600" data-i18n="modal.cancel">取消</button>
+        </div>
+    </div>
+
+    <!-- App Download Modal -->
+    <div class="modal-overlay" id="appModal">
+        <div class="modal-box text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-sm shadow-lg">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">下载中检APP</h3>
+            <p class="text-sm text-slate-500 mb-5">随时随地处理工作，支持 iOS 和 Android</p>
+
+            <!-- QR Code -->
+            <div class="flex justify-center mb-5">
+                <div class="p-3 bg-white rounded-xl border-2 border-slate-100 shadow-sm">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://www.ccic.com/app/download" 
+                         alt="下载APP二维码" 
+                         width="160" height="160" 
+                         style="display:block;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none; width:160px; height:160px; align-items:center; justify-content:center; background:#f8fafc; border-radius:8px; flex-direction:column; gap:8px;">
+                        <i class="fas fa-qrcode text-[22px] text-slate-300"></i>
+                        <span class="text-xs text-slate-400">二维码加载中</span>
+                    </div>
+                </div>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">使用手机扫描二维码即可下载</p>
+
+            <button onclick="closeAppModal()" class="text-sm text-slate-400 hover:text-slate-600 font-medium px-4 py-2 rounded-lg hover:bg-slate-100 transition-all" data-i18n="modal.close">关闭</button>
+        </div>
+    </div>
+
+    <!-- Archive Search Modal -->
+    <div class="modal-overlay" id="archiveModal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold mb-3">历史消息归档查询</h3>
+            <div class="archive-bar">
+                <input type="text" placeholder="搜索消息标题、发送人或内容..." id="archiveInput">
+                <button onclick="searchArchive()"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="space-y-2 max-h-60 overflow-y-auto text-sm">
+                <div class="p-3 bg-slate-50 rounded-lg">
+                    <div class="font-medium mb-1">李工 · 实验室</div>
+                    <div class="text-slate-500 text-xs">样品检测已完成，请查看报告。 · 2026-05-20</div>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-lg">
+                    <div class="font-medium mb-1">系统预警 · 证书管理</div>
+                    <div class="text-slate-500 text-xs">证书即将到期提醒。 · 2026-05-18</div>
+                </div>
+            </div>
+            <button onclick="closeArchiveModal()" class="w-full mt-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200 text-sm font-medium text-slate-600" data-i18n="modal.close">关闭</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle text-green-400"></i>
+        <span id="toastMsg">操作成功</span>
+    </div>
+
+    <script>
+        // State
+        let currentCols = 3;
+        let autoRefreshTimer = null;
+        let sortable = null;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            initSortable();
+            initBanner();
+            initCardManager();
+            initSidebarTooltip();
+        });
+
+        // Sortable
+        function initSortable() {
+            const grid = document.getElementById('cardGrid');
+            sortable = Sortable.create(grid, {
+                animation: 300,
+                handle: '.card-header',
+                ghostClass: 'dragging',
+                onEnd: () => showToast('布局顺序已保存')
+            });
+        }
+
+        // Banner
+        let slideIdx = 0;
+        const slideEls = document.querySelectorAll('.banner-slide');
+        const dotEls = document.querySelectorAll('.banner-dot');
+
+        function initBanner() {
+            setInterval(() => goToSlide((slideIdx + 1) % slideEls.length), 5000);
+        }
+        function goToSlide(idx) {
+            slideEls[slideIdx].classList.remove('active');
+            dotEls[slideIdx].classList.remove('active');
+            slideIdx = idx;
+            slideEls[slideIdx].classList.add('active');
+            dotEls[slideIdx].classList.add('active');
+        }
+
+        // Layout Columns
+        function setLayoutCols(cols) {
+            if (cols === 'custom') {
+                showToast('请点击卡片右上角菜单设置自定义尺寸');
+                document.querySelectorAll('.col-option').forEach(b => b.classList.remove('active'));
+                document.getElementById('colBtnCustom')?.classList.add('active');
+                return;
+            }
+            currentCols = cols;
+            const grid = document.getElementById('cardGrid');
+
+            // 移除所有布局class
+            grid.classList.remove('layout-1col','layout-2col','layout-3col','layout-customcol');
+            // 添加新布局class
+            grid.classList.add('layout-' + cols + 'col');
+
+            // 重置所有卡片尺寸（清除自定义状态，按规则重新分配）
+            document.querySelectorAll('.portal-card[data-id]').forEach(card => {
+                // 清除自定义状态
+                card.classList.remove('card-custom');
+                card.style.removeProperty('--custom-span');
+                card.classList.remove('card-size-small','card-size-medium','card-size-large');
+
+                // 获取原始尺寸
+                const originalSize = card.dataset.originalSize || 'small';
+
+                if (cols === 1) {
+                    // 单列: 所有卡片都占满行
+                    card.classList.add('card-size-large');
+                    card.dataset.size = 'large';
+                } else if (cols === 2) {
+                    // 双列: 小=1/2, 中=1/2, 大=满行
+                    if (originalSize === 'large') {
+                        card.classList.add('card-size-large');
+                        card.dataset.size = 'large';
+                    } else {
+                        card.classList.add('card-size-medium');
+                        card.dataset.size = 'medium';
+                    }
+                } else {
+                    // 三列: 小=1/3, 中=1/2, 大=满行
+                    card.classList.add('card-size-' + originalSize);
+                    card.dataset.size = originalSize;
+                }
+            });
+
+            // 更新顶部工具栏按钮状态
+            [1,2,3].forEach(n => {
+                const btn = document.getElementById('colBtn' + n);
+                const setBtn = document.getElementById('setColBtn' + n);
+                if (n === cols) {
+                    if (btn) btn.classList.add('active');
+                    if (setBtn) { setBtn.classList.add('border-primary','text-primary'); setBtn.classList.remove('border-slate-200'); }
+                } else {
+                    if (btn) btn.classList.remove('active');
+                    if (setBtn) { setBtn.classList.remove('border-primary','text-primary'); setBtn.classList.add('border-slate-200'); }
+                }
+            });
+            const customBtn = document.getElementById('colBtnCustom');
+            if (customBtn) customBtn.classList.remove('active');
+
+            showToast('已切换为' + cols + '列布局');
+        }
+
+        // Sidebar 3-level
+        function toggleSubmenu(el, isLevel3 = false) {
+            const parent = el.parentElement;
+            const submenu = parent.querySelector('.submenu');
+            const arrow = el.querySelector('.menu-arrow');
+
+            if (submenu) {
+                const isOpen = submenu.classList.contains('open');
+                if (!isLevel3) {
+                    // Close siblings at same level
+                    parent.parentElement.querySelectorAll(':scope > .submenu.open').forEach(s => {
+                        if (s !== submenu) {
+                            s.classList.remove('open');
+                            s.previousElementSibling?.querySelector('.menu-arrow')?.classList.remove('open');
+                        }
+                    });
+                }
+                submenu.classList.toggle('open');
+                arrow?.classList.toggle('open');
+            }
+        }
+
+        function selectMenu(el) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Sidebar Tooltip for collapsed mode
+        function initSidebarTooltip() {
+            const tooltip = document.getElementById('menuTooltip');
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('mouseenter', (e) => {
+                    const sidebar = document.getElementById('sidebar');
+                    if (!sidebar.classList.contains('collapsed')) return;
+                    const text = item.querySelector('.menu-text')?.textContent;
+                    if (!text) return;
+                    tooltip.textContent = text;
+                    const rect = item.getBoundingClientRect();
+                    tooltip.style.top = rect.top + rect.height/2 - 15 + 'px';
+                    tooltip.style.left = rect.right + 10 + 'px';
+                    tooltip.classList.add('show');
+                });
+                item.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('show');
+                });
+            });
+        }
+
+        // Mobile Sidebar Toggle
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            const sb = document.getElementById('sidebar');
+            const main = document.getElementById('mainContent');
+            sb.classList.toggle('collapsed');
+            main.classList.toggle('sidebar-collapsed');
+        });
+
+        // Card Size - manual adjustment always switches to custom mode
+        function changeCardSize(id, size) {
+            const card = document.querySelector('[data-id="' + id + '"]');
+            if (!card) return;
+
+            // 保存原始尺寸（用于后续重置）
+            if (!card.dataset.originalSize) {
+                card.dataset.originalSize = card.dataset.size || 'small';
+            }
+
+            // 清除之前的状态
+            card.classList.remove('card-size-small','card-size-medium','card-size-large','card-custom');
+            card.style.removeProperty('--custom-span');
+
+            const cols = currentCols;
+            let span = 1;
+            let sizeName = '';
+
+            if (size === 'small') {
+                span = 1;
+                sizeName = '小';
+            } else if (size === 'medium') {
+                span = (cols >= 3) ? 2 : 1;
+                sizeName = '中';
+            } else if (size === 'large') {
+                span = cols;
+                sizeName = '大';
+            } else if (size === 'custom') {
+                span = Math.min(2, cols);
+                sizeName = '自定义';
+            }
+
+            // 用户手动调整 → 标记为自定义
+            card.classList.add('card-custom');
+            card.style.setProperty('--custom-span', span.toString());
+            card.dataset.size = size;
+
+            // 自动切换到自定义布局状态（顶部按钮高亮）
+            document.querySelectorAll('.col-option').forEach(b => b.classList.remove('active'));
+            const customBtn = document.getElementById('colBtnCustom');
+            if (customBtn) customBtn.classList.add('active');
+
+            showToast('已设为' + sizeName + '尺寸，布局已切换为自定义');
+            closeAllMenus();
+            initCardManager();
+        }
+
+        function removeCard(id) {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.style.transition = 'all 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => { card.remove(); showToast('卡片已删除'); initCardManager(); }, 300);
+            }
+            closeAllMenus();
+        }
+
+        // Card Menu
+        function toggleCardMenu(btn) {
+            const menu = btn.closest('.card-menu');
+            const open = menu.classList.contains('open');
+            closeAllMenus();
+            if (!open) menu.classList.add('open');
+        }
+        function closeAllMenus() {
+            document.querySelectorAll('.card-menu.open').forEach(m => m.classList.remove('open'));
+        }
+        document.addEventListener('click', e => { if (!e.target.closest('.card-menu')) closeAllMenus(); });
+
+        // Todo
+        function switchTodoTab(tab, status) {
+            tab.parentElement.querySelectorAll('.todo-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const list = document.getElementById('todoList');
+            Array.from(list.children).forEach((item, i) => {
+                item.style.animation = 'none';
+                item.offsetHeight;
+                item.style.animation = 'slideUp 0.3s ease forwards';
+                item.style.animationDelay = i * 0.05 + 's';
+            });
+        }
+        function openTodo(title) { showToast(`跳转至：${title}`); }
+
+        // Notification
+        function filterNotif(chip, type) {
+            chip.parentElement.querySelectorAll('.notif-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            showToast(`筛选：${chip.textContent}`);
+        }
+        function readNotif(item) {
+            item.classList.remove('unread');
+            const dot = item.querySelector('.unread-dot');
+            if (dot) dot.remove();
+        }
+        function markAllRead() {
+            document.querySelectorAll('.notif-item.unread').forEach(i => { i.classList.remove('unread'); const d = i.querySelector('.unread-dot'); if (d) d.remove(); });
+            showToast('全部标记为已读');
+        }
+
+        // Message Center
+        function switchMsgTab(tab, type) {
+            tab.parentElement.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('msg-internal').style.display = type === 'internal' ? 'block' : 'none';
+            document.getElementById('msg-external').style.display = type === 'external' ? 'block' : 'none';
+        }
+        function readMsg(card) {
+            card.classList.remove('unread');
+            const badge = card.querySelector('.msg-status-badge');
+            if (badge) { badge.classList.remove('unread'); badge.classList.add('read'); }
+            const corner = card.querySelector('.msg-corner-tag');
+            if (corner && corner.textContent === '即时') corner.textContent = '已读';
+        }
+        function doMsgAction(e, action) {
+            e.stopPropagation();
+            const map = { reply: '已打开回复窗口', forward: '已打开发送窗口', recall: '消息已撤回', mute: '已设置免打扰' };
+            showToast(map[action] || '操作成功');
+        }
+        function openArchiveSearch() {
+            document.getElementById('archiveModal').classList.add('open');
+        }
+        function closeArchiveModal() {
+            document.getElementById('archiveModal').classList.remove('open');
+        }
+        function searchArchive() {
+            showToast('搜索历史消息...');
+        }
+
+        // Quick Systems
+        function openSystem(name) { showToast(`正在打开：${name}系统`); }
+        function openAddSystem() { showToast('打开添加常用系统对话框'); }
+
+        // Sub Tabs
+        function switchSubTab(tab, id) {
+            const body = tab.closest('.card-body');
+            body.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        }
+
+        // Refresh
+        function refreshCard(id) {
+            const icon = document.getElementById(`refresh-${id}`);
+            if (icon) { icon.classList.add('spin'); setTimeout(() => icon.classList.remove('spin'), 1000); }
+            showToast('数据已刷新');
+        }
+        function toggleAutoRefresh(cb) {
+            if (cb.checked) {
+                autoRefreshTimer = setInterval(() => showToast('自动刷新完成'), 300000);
+                showToast('已开启自动刷新（5分钟）');
+            } else {
+                clearInterval(autoRefreshTimer);
+                showToast('已关闭自动刷新');
+            }
+        }
+
+        // Settings Panel
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('open');
+            document.getElementById('settingsOverlay').classList.toggle('open');
+            initCardManager();
+        }
+
+        // Card Manager in Settings
+        function initCardManager() {
+            const container = document.getElementById('cardManagerList');
+            if (!container) return;
+            const cards = document.querySelectorAll('.portal-card[data-id]');
+            container.innerHTML = '';
+            cards.forEach(card => {
+                const id = card.dataset.id;
+                const title = card.querySelector('.card-header .font-semibold')?.textContent || id;
+                const size = card.dataset.size || 'small';
+                const isCustom = card.classList.contains('card-custom');
+                const sizeLabel = isCustom ? '自定义' : (size === 'small' ? '小' : size === 'medium' ? '中' : '大');
+                const badgeColor = isCustom ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600';
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 bg-slate-50 rounded-lg';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <i class="fas fa-grip-lines text-slate-400 cursor-move"></i>
+                        <span class="text-sm font-medium truncate">${title}</span>
+                        <span class="text-[10px] px-1.5 py-0.5 ${badgeColor} rounded font-medium">${sizeLabel}</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <select onchange="changeCardSize('${id}', this.value)" class="text-xs border rounded px-2 py-1 bg-white outline-none">
+                            <option value="small" ${size==='small'?'selected':''}>小</option>
+                            <option value="medium" ${size==='medium'?'selected':''}>中</option>
+                            <option value="large" ${size==='large'?'selected':''}>大</option>
+                        </select>
+                        <button onclick="removeCard('${id}')" class="text-slate-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Add Card
+        function openAddCardModal() { document.getElementById('addCardModal').classList.add('open'); }
+        function closeAddCardModal() { document.getElementById('addCardModal').classList.remove('open'); }
+        function addCard(type) {
+            const grid = document.getElementById('cardGrid');
+            let html = '';
+            if (type === 'stats') {
+                html = createCard('stats', '数据统计', 'fa-chart-line', 'medium', `
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl text-center">
+                            <div class="text-sm font-bold text-primary">1,234</div>
+                            <div class="text-xs text-slate-500 mt-1">本月检测量</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl text-center">
+                            <div class="text-sm font-bold text-green-600">98.5%</div>
+                            <div class="text-xs text-slate-500 mt-1">合格率</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-xl text-center">
+                            <div class="text-sm font-bold text-amber-600">56</div>
+                            <div class="text-xs text-slate-500 mt-1">待审报告</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl text-center">
+                            <div class="text-sm font-bold text-purple-600">12</div>
+                            <div class="text-xs text-slate-500 mt-1">新客户</div>
+                        </div>
+                    </div>
+                `);
+            } else if (type === 'weather') {
+                html = createCard('weather', '天气信息', 'fa-cloud-sun', 'small', `
+                    <div class="flex items-center justify-between p-2">
+                        <div>
+                            <div class="text-3xl font-bold text-slate-800">24°C</div>
+                            <div class="text-sm text-slate-500 mt-1">大连市 · 多云转晴</div>
+                        </div>
+                        <i class="fas fa-cloud-sun text-5xl text-amber-400"></i>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-500 px-2 pb-2 mt-2">
+                        <span><i class="fas fa-tint mr-1"></i>湿度 65%</span>
+                        <span><i class="fas fa-wind mr-1"></i>东南风 3级</span>
+                        <span><i class="fas fa-leaf mr-1"></i>空气质量 优</span>
+                    </div>
+                `);
+            } else if (type === 'calendar') {
+                html = createCard('calendar', '日程安排', 'fa-calendar-alt', 'medium', `
+                    <div class="space-y-3">
+                        <div class="flex gap-3 items-start">
+                            <div class="w-12 h-12 bg-primary/10 rounded-xl flex flex-col items-center justify-center text-primary flex-shrink-0">
+                                <span class="text-xs font-bold">5月</span>
+                                <span class="text-lg font-bold leading-none">26</span>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-semibold text-slate-800">部门周例会</div>
+                                <div class="text-xs text-slate-500 mt-0.5">14:00 - 15:30 · 会议室A</div>
+                                <div class="flex gap-1 mt-1.5">
+                                    <span class="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded">会议</span>
+                                    <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">重要</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 items-start">
+                            <div class="w-12 h-12 bg-slate-100 rounded-xl flex flex-col items-center justify-center text-slate-500 flex-shrink-0">
+                                <span class="text-xs font-bold">5月</span>
+                                <span class="text-lg font-bold leading-none">28</span>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-sm font-semibold text-slate-800">项目评审会</div>
+                                <div class="text-xs text-slate-500 mt-0.5">09:00 - 11:00 · 线上会议</div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+            if (html) {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const newCard = temp.firstElementChild;
+                newCard.classList.add('animate-enter');
+                grid.appendChild(newCard);
+                closeAddCardModal();
+                showToast('卡片已添加至末尾，可拖拽调整位置');
+                initCardManager();
+            }
+        }
+
+        function createCard(id, title, icon, size, body) {
+            const spanClass = size === 'small' ? 'card-size-small' : size === 'medium' ? 'card-size-medium' : 'card-size-large';
+            return `
+                <div class="portal-card ${spanClass}" data-id="${id}" data-size="${size}">
+                    <div class="card-header">
+                        <div class="flex items-center gap-2">
+                            <i class="fas ${icon} text-primary"></i>
+                            <span class="font-semibold text-slate-800">${title}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="card-menu">
+                                <button class="card-menu-btn" onclick="toggleCardMenu(this)">
+                                    <i class="fas fa-ellipsis-v text-xs"></i>
+                                </button>
+                                <div class="card-dropdown">
+                                    <div class="dropdown-item" onclick="changeCardSize('${id}','small')">小尺寸 (占 1/3 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('${id}','medium')">中尺寸 (占 1/2 行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('${id}','large')">大尺寸 (占满整行)</div>
+                                <div class="dropdown-item" onclick="changeCardSize('${id}','custom')">自定义</div>
+                                    <div class="border-t border-slate-100 my-1"></div>
+                                    <div class="dropdown-item delete" onclick="removeCard('${id}')"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">${body}</div>
+                </div>
+            `;
+        }
+
+        function resetLayout() { location.reload(); }
+
+        // App Modal
+        function openAppModal() { document.getElementById('appModal').classList.add('open'); }
+        function closeAppModal() { document.getElementById('appModal').classList.remove('open'); }
+
+        // Org Switch
+        function switchOrg() {
+            // Create org switch modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay open';
+            modal.style.zIndex = '3000';
+            modal.innerHTML = `
+                <div class="modal-box" style="max-width: 420px;">
+                    <h3 class="text-lg font-bold mb-4">切换组织</h3>
+                    <div class="space-y-2 mb-4">
+                        <div class="p-3 border-2 border-primary bg-blue-50 rounded-xl cursor-pointer flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center"><i class="fas fa-building"></i></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">中检简诺（大连）数据科技有限公司</div>
+                                <div class="text-xs text-slate-500">当前组织</div>
+                            </div>
+                            <i class="fas fa-check text-primary"></i>
+                        </div>
+                        <div class="p-3 border border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-blue-50 transition-all flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-slate-400 text-white flex items-center justify-center"><i class="fas fa-building"></i></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">中检集团总部</div>
+                                <div class="text-xs text-slate-500">总部机构</div>
+                            </div>
+                        </div>
+                        <div class="p-3 border border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-blue-50 transition-all flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-slate-400 text-white flex items-center justify-center"><i class="fas fa-building"></i></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">中检天津公司</div>
+                                <div class="text-xs text-slate-500">分支机构</div>
+                            </div>
+                        </div>
+                        <div class="p-3 border border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-blue-50 transition-all flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-slate-400 text-white flex items-center justify-center"><i class="fas fa-building"></i></div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">中检云南公司</div>
+                                <div class="text-xs text-slate-500">分支机构</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('.modal-overlay').remove(); showToast('组织切换成功')" class="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">确认切换</button>
+                    <button onclick="this.closest('.modal-overlay').remove()" class="w-full mt-2 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all">取消</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+        }
+
+        // Toast
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMsg');
+            msgEl.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Unit Toggle
+        function toggleUnit() {
+            isMetric = !isMetric;
+            const knob = document.querySelector('#settingsUnitToggle .unit-toggle-knob');
+            const toggle = document.getElementById('settingsUnitToggle');
+            if (knob) knob.textContent = isMetric ? '公' : '英';
+            if (toggle) {
+                if (isMetric) toggle.classList.remove('active');
+                else toggle.classList.add('active');
+            }
+            showToast(`已切换为${isMetric ? '公制' : '英制'}单位`);
+            updateUnitDisplay();
+        }
+        function updateUnitDisplay() {
+            // Example: update temperature, distances, weights etc.
+            // This would be connected to actual data in production
+            document.querySelectorAll('[data-unit]').forEach(el => {
+                const val = parseFloat(el.dataset.unit);
+                if (!isNaN(val)) {
+                    if (isMetric) {
+                        el.textContent = val + (el.dataset.unitType || '');
+                    } else {
+                        // Convert to imperial
+                        const type = el.dataset.unitType;
+                        if (type === '°C') el.textContent = (val * 9/5 + 32).toFixed(1) + '°F';
+                        else if (type === 'km') el.textContent = (val * 0.621371).toFixed(1) + 'mi';
+                        else if (type === 'kg') el.textContent = (val * 2.20462).toFixed(1) + 'lb';
+                        else el.textContent = val;
+                    }
+                }
+            });
+        }
+
+        // Modal close on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(o => {
+            o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+        });
+    </script>
+
+
+    <!-- ==================== i18n Language Switch ==================== -->
+    <script>
+    (function() {
+        // 多语言字典
+        const i18n = {
+            zh: {
+                // Brand & Header
+                "brand.title": "中检集团智能门户",
+                "org.name": "中检简诺（大连）数据科技有限公司",
+                "user.role": "管理员",
+                "user.dept": "管理员 | 技术部",
+                "user.profile": "个人中心",
+                "user.settings": "账号设置",
+                "user.security": "安全中心",
+                "user.logout": "退出登录",
+                "notif.title": "消息通知",
+                "notif.readall": "一键已读",
+
+                // Sidebar sections
+                "sidebar.office": "办公协同",
+                "sidebar.management": "经营管理",
+                "sidebar.functions": "职能管理",
+                "sidebar.party": "党建监督",
+                "sidebar.support": "支撑平台",
+
+                // Menu items
+                "menu.home": "首页",
+                "menu.contract": "合同订单",
+                "menu.contract.draft": "合同起草",
+                "menu.order.mgmt": "订单管理",
+                "menu.approval": "审批流程",
+                "menu.backbone": "主干系统",
+                "menu.biz.mgmt": "业务管理",
+                "menu.data.report": "数据报表",
+                "menu.monthly": "月度报表",
+                "menu.quarterly": "季度分析",
+                "menu.annual": "年度汇总",
+                "menu.sys.config": "系统配置",
+                "menu.sims": "SIMS系统",
+                "menu.onsite": "现场实施",
+                "menu.task.dispatch": "任务派发",
+                "menu.progress": "进度跟踪",
+                "menu.feedback": "现场反馈",
+                "menu.lims": "LIMS实验室",
+                "menu.industry.ver": "行业版本",
+                "menu.lims.petro": "LIMS-石化/化工",
+                "menu.lims.food": "LIMS-食品/农产品",
+                "menu.lims.env": "LIMS-资源/环境",
+                "menu.test.mgmt": "检测管理",
+                "menu.equip.mgmt": "设备管理",
+                "menu.cert": "证书报告",
+                "menu.sample": "样品管理",
+                "menu.coal": "陆运煤炭采信",
+                "menu.hr": "人力资源",
+                "menu.org.structure": "组织架构",
+                "menu.employee": "员工档案",
+                "menu.attendance": "考勤管理",
+                "menu.finance": "财务系统",
+                "menu.invest": "投资管理",
+                "menu.party.mgmt": "党建管理",
+                "menu.central.spirit": "中央精神",
+                "menu.rules": "制度规范",
+                "menu.study": "学习教育",
+                "menu.supervision": "监督管理",
+                "menu.report.violation": "违纪举报",
+                "menu.stats": "统计分析",
+                "menu.app.center": "应用中心",
+                "menu.help": "帮助中心",
+                "menu.layout.settings": "首页布局设置",
+
+                // Toolbar
+                "toolbar.workspace": "我的工作台",
+                "toolbar.drag.hint": "拖拽卡片头部可调整顺序",
+                "toolbar.layout": "布局设置",
+                "toolbar.add": "添加卡片",
+                "toolbar.reset": "恢复默认",
+                "layout.single": "单列",
+                "layout.double": "双列",
+                "layout.triple": "三列",
+                "layout.custom": "自定义",
+
+                // Cards
+                "card.todo": "待办中心",
+                "card.notification": "通知中心",
+                "card.message": "消息中心",
+                "card.quick.systems": "常用系统",
+                "card.notice": "通知公告",
+                "card.headline": "中检头条",
+                "card.org.news": "机构动态",
+                "card.gov.news": "国资动态",
+                "card.internal.control": ""1+N"内控体系专栏",
+                "card.party": "党建专栏",
+                "card.report": "违纪举报",
+                "card.digital": "数字中检",
+                "card.digital.notice": "数字中检公告",
+                "card.stats": "数据统计",
+                "card.weather": "天气信息",
+                "card.calendar": "日程安排",
+                "card.delete": "删除卡片",
+
+                // Card internal
+                "todo.unprocessed": "未处理",
+                "todo.processing": "处理中",
+                "todo.overdue": "已逾期",
+                "msg.internal": "内部消息",
+                "msg.external": "外部预警",
+                "notif.all": "全部",
+                "notif.system": "系统",
+                "notif.business": "业务",
+                "notif.announce": "公告",
+                "party.spirit": "中央精神",
+                "party.rules": "制度规范",
+                "party.study": "学习教育",
+                "party.guide": "作业指导书",
+                "report.scope": "受理范围",
+                "report.notice": "注意事项",
+                "report.channel": "举报途径",
+                "digital.transform": "数字化转型",
+                "digital.lecture": "大讲堂",
+                "digital.wiki": "系统百科",
+                "digital.institution": "制度管理",
+                "notice.update": "更新公告",
+                "notice.dynamic": "系统动态",
+                "notice.standard": "标准规范",
+                "notice.download": "常用下载",
+                "sys.oa": "OA办公",
+                "sys.lims": "LIMS",
+                "sys.hr": "人力系统",
+                "sys.finance": "财务系统",
+                "sys.contract": "合同系统",
+                "sys.report": "证书报告",
+                "sys.sample": "样品管理",
+                "sys.more": "更多",
+                "common.more": "更多",
+                "size.small": "小尺寸 (占 1/3 行)",
+                "size.medium": "中尺寸 (占 1/2 行)",
+                "size.large": "大尺寸 (占满整行)",
+                "size.custom": "自定义",
+
+                // Banner
+                "banner.vision": "愿景 Vision",
+                "banner.vision.title": "全球质量服务的引领者",
+                "banner.vision.sub": "A Global Leader in Quality Service",
+                "banner.mission": "使命 Mission",
+                "banner.mission.title": "创造更值得信赖的世界",
+                "banner.mission.sub": "Creating a More Trustworthy World",
+                "banner.digital": "数字化转型",
+                "banner.digital.title": "智慧中检 · 数字赋能",
+                "banner.digital.sub": "推动集团高质量发展新征程",
+
+                // Settings
+                "settings.title": "首页布局设置",
+                "settings.hint": "仅对当前首页生效，无需审批",
+                "settings.layout.cols": "布局列数",
+                "settings.layout.hint": "切换列数时卡片会自动适配尺寸",
+                "settings.unit": "单位设置",
+                "settings.auto.refresh": "自动刷新",
+                "settings.enable": "启用自动刷新",
+                "settings.realtime": "实时",
+                "settings.5min": "5分钟",
+                "settings.15min": "15分钟",
+                "settings.added.cards": "已添加卡片",
+                "settings.add.new": "添加新卡片",
+                "settings.restore": "恢复默认布局",
+
+                // Modals
+                "modal.add.title": "添加卡片到首页",
+                "modal.add.desc": "选择要添加的卡片类型，添加后可拖拽调整位置",
+                "modal.cancel": "取消",
+                "modal.app.title": "下载中检APP",
+                "modal.app.desc": "随时随地处理工作，支持 iOS 和 Android",
+                "modal.app.qr": "使用手机扫描二维码即可下载",
+                "modal.close": "关闭",
+                "modal.archive.title": "历史消息归档查询",
+                "modal.archive.placeholder": "搜索消息标题、发送人或内容...",
+
+                // Card descriptions (add modal)
+                "card.stats.desc": "展示关键业务指标",
+                "card.weather.desc": "当前城市天气状况",
+                "card.calendar.desc": "今日待办日程",
+
+                // Misc
+                "lang.zh": "简体中文",
+                "lang.en": "English",
+            },
+            en: {
+                // Brand & Header
+                "brand.title": "CCIC Smart Portal",
+                "org.name": "CCIC Jiannuo (Dalian) Data Technology Co., Ltd.",
+                "user.role": "Administrator",
+                "user.dept": "Admin | Technology",
+                "user.profile": "My Profile",
+                "user.settings": "Account Settings",
+                "user.security": "Security Center",
+                "user.logout": "Sign Out",
+                "notif.title": "Notifications",
+                "notif.readall": "Mark All as Read",
+
+                // Sidebar sections
+                "sidebar.office": "Office Collaboration",
+                "sidebar.management": "Business Operations",
+                "sidebar.functions": "Functional Management",
+                "sidebar.party": "Party & Compliance",
+                "sidebar.support": "Platform Support",
+
+                // Menu items
+                "menu.home": "Home",
+                "menu.contract": "Contracts & Orders",
+                "menu.contract.draft": "Contract Draft",
+                "menu.order.mgmt": "Order Management",
+                "menu.approval": "Approval Workflow",
+                "menu.backbone": "Core Systems",
+                "menu.biz.mgmt": "Business Management",
+                "menu.data.report": "Data Reports",
+                "menu.monthly": "Monthly Report",
+                "menu.quarterly": "Quarterly Analysis",
+                "menu.annual": "Annual Summary",
+                "menu.sys.config": "System Configuration",
+                "menu.sims": "SIMS",
+                "menu.onsite": "On-site Operations",
+                "menu.task.dispatch": "Task Assignment",
+                "menu.progress": "Progress Tracker",
+                "menu.feedback": "Field Feedback",
+                "menu.lims": "LIMS Laboratory",
+                "menu.industry.ver": "Industry Versions",
+                "menu.lims.petro": "LIMS - Petrochemical",
+                "menu.lims.food": "LIMS - Food & Agriculture",
+                "menu.lims.env": "LIMS - Resources & Environment",
+                "menu.test.mgmt": "Test Management",
+                "menu.equip.mgmt": "Equipment Management",
+                "menu.cert": "Certificates & Reports",
+                "menu.sample": "Sample Management",
+                "menu.coal": "Railway Coal Inspection",
+                "menu.hr": "Human Resources",
+                "menu.org.structure": "Organization",
+                "menu.employee": "Employee Profiles",
+                "menu.attendance": "Attendance Management",
+                "menu.finance": "Financial System",
+                "menu.invest": "Investment Management",
+                "menu.party.mgmt": "Party Affairs",
+                "menu.central.spirit": "Central Guidance",
+                "menu.rules": "Policies & Standards",
+                "menu.study": "Learning & Education",
+                "menu.supervision": "Oversight",
+                "menu.report.violation": "Violation Reporting",
+                "menu.stats": "Analytics",
+                "menu.app.center": "App Center",
+                "menu.help": "Help Center",
+                "menu.layout.settings": "Homepage Layout",
+
+                // Toolbar
+                "toolbar.workspace": "My Workspace",
+                "toolbar.drag.hint": "Drag card headers to rearrange",
+                "toolbar.layout": "Layout Settings",
+                "toolbar.add": "Add Card",
+                "toolbar.reset": "Reset Layout",
+                "layout.single": "Single Column",
+                "layout.double": "Double Column",
+                "layout.triple": "Triple Column",
+                "layout.custom": "Custom",
+
+                // Cards
+                "card.todo": "Task Center",
+                "card.notification": "Notification Center",
+                "card.message": "Message Center",
+                "card.quick.systems": "Quick Links",
+                "card.notice": "Announcements",
+                "card.headline": "CCIC News",
+                "card.org.news": "Company News",
+                "card.gov.news": "SOE News",
+                "card.internal.control": ""1+N" Internal Control",
+                "card.party": "Party Affairs",
+                "card.report": "Violation Reporting",
+                "card.digital": "Digital CCIC",
+                "card.digital.notice": "Digital CCIC Notices",
+                "card.stats": "Statistics",
+                "card.weather": "Weather Info",
+                "card.calendar": "Schedule",
+                "card.delete": "Remove Card",
+
+                // Card internal
+                "todo.unprocessed": "Pending",
+                "todo.processing": "In Progress",
+                "todo.overdue": "Overdue",
+                "msg.internal": "Internal",
+                "msg.external": "External Alerts",
+                "notif.all": "All",
+                "notif.system": "System",
+                "notif.business": "Business",
+                "notif.announce": "Announce",
+                "party.spirit": "Central Guidance",
+                "party.rules": "Policies",
+                "party.study": "Learning",
+                "party.guide": "Work Instructions",
+                "report.scope": "Scope",
+                "report.notice": "Guidelines",
+                "report.channel": "Reporting Channels",
+                "digital.transform": "Digital Transformation",
+                "digital.lecture": "Lectures",
+                "digital.wiki": "System Wiki",
+                "digital.institution": "Institutions",
+                "notice.update": "Update Notices",
+                "notice.dynamic": "System Updates",
+                "notice.standard": "Standards",
+                "notice.download": "Downloads",
+                "sys.oa": "OA System",
+                "sys.lims": "LIMS",
+                "sys.hr": "HR System",
+                "sys.finance": "Finance",
+                "sys.contract": "Contracts",
+                "sys.report": "Certificates",
+                "sys.sample": "Samples",
+                "sys.more": "More",
+                "common.more": "More",
+                "size.small": "Small (1/3)",
+                "size.medium": "Medium (1/2)",
+                "size.large": "Large (Full Width)",
+                "size.custom": "Custom",
+
+                // Banner
+                "banner.vision": "Vision",
+                "banner.vision.title": "A Global Leader in Quality Service",
+                "banner.vision.sub": "A Global Leader in Quality Service",
+                "banner.mission": "Mission",
+                "banner.mission.title": "Creating a More Trustworthy World",
+                "banner.mission.sub": "Creating a More Trustworthy World",
+                "banner.digital": "Digital Transformation",
+                "banner.digital.title": "Smart CCIC · Digital Empowerment",
+                "banner.digital.sub": "Empowering High-Quality Development",
+
+                // Settings
+                "settings.title": "Homepage Layout Settings",
+                "settings.hint": "Applies to current homepage only",
+                "settings.layout.cols": "Column Layout",
+                "settings.layout.hint": "Cards auto-fit when layout changes",
+                "settings.unit": "Unit Preferences",
+                "settings.auto.refresh": "Auto Refresh",
+                "settings.enable": "Enable Auto Refresh",
+                "settings.realtime": "Real-time",
+                "settings.5min": "5 Minutes",
+                "settings.15min": "15 Minutes",
+                "settings.added.cards": "Active Cards",
+                "settings.add.new": "Add New Card",
+                "settings.restore": "Restore Default Layout",
+
+                // Modals
+                "modal.add.title": "Add Card to Homepage",
+                "modal.add.desc": "Select a card type, drag to reorder after adding",
+                "modal.cancel": "Cancel",
+                "modal.app.title": "Download CCIC App",
+                "modal.app.desc": "Work from anywhere, supports iOS & Android",
+                "modal.app.qr": "Scan QR code with your mobile device",
+                "modal.close": "Close",
+                "modal.archive.title": "Message Archive Search",
+                "modal.archive.placeholder": "Search by title, sender, or content...",
+
+                // Card descriptions (add modal)
+                "card.stats.desc": "Key performance indicators",
+                "card.weather.desc": "Local weather conditions",
+                "card.calendar.desc": "Today's agenda",
+
+                // Misc
+                "lang.zh": "简体中文",
+                "lang.en": "English",
+            }
+        };
+
+        let currentLang = localStorage.getItem('ccic_lang') || 'zh';
+
+        function applyLang(lang) {
+            const dict = i18n[lang];
+            if (!dict) return;
+
+            // 翻译所有 data-i18n 元素
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    // 保留内部 HTML 结构，只替换文本节点
+                    if (el.children.length === 0) {
+                        el.textContent = dict[key];
+                    } else {
+                        // 有子元素时，只替换直接文本
+                        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                        let node;
+                        while (node = walker.nextNode()) {
+                            if (node.textContent.trim() && dict[key]) {
+                                node.textContent = dict[key];
+                                break; // 只替换第一个文本节点
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 翻译 placeholder
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (dict[key]) el.placeholder = dict[key];
+            });
+
+            // 更新语言徽章
+            const badge = document.getElementById('currentLangBadge');
+            if (badge) badge.textContent = lang === 'zh' ? '中' : 'EN';
+
+            // 更新下拉菜单高亮
+            document.querySelectorAll('#langOptZh, #langOptEn').forEach(opt => opt.classList.remove('active'));
+            const activeOpt = document.getElementById(lang === 'zh' ? 'langOptZh' : 'langOptEn');
+            if (activeOpt) activeOpt.classList.add('active');
+
+            // 更新页面标题
+            document.title = lang === 'zh' ? 'CCIC 智能门户首页 - 交互式 Demo' : 'CCIC Smart Portal - Interactive Demo';
+
+            // 更新 html lang
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        }
+
+        window.switchLang = function(lang) {
+            currentLang = lang;
+            localStorage.setItem('ccic_lang', lang);
+            applyLang(lang);
+            showToast(lang === 'zh' ? '已切换为简体中文' : 'Switched to English');
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLang(currentLang);
+        });
+    })();
+    </script>
+
+</body>
+</html>
