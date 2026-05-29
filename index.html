@@ -209,8 +209,8 @@
         /* Banner - Fixed Full Width */
         .banner-section {
             width: 100%;
-            padding: 24px 24px 0px 24px;
-            margin-bottom: 16px;
+            padding: 0 24px;
+            margin-bottom: 4px;
         }
         .banner-carousel {
             position: relative;
@@ -260,7 +260,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 0px 16px;
+            padding: 0 24px 16px;
             border-bottom: 1px solid #e2e8f0;
             margin: 0 24px;
         }
@@ -1640,7 +1640,452 @@
             gap: 12px;
         }
 
-    </style>
+    
+        /* ===== Enhanced Permission Management Styles ===== */
+
+        /* Page Stats Bar */
+        .perm-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 1024px) {
+            .perm-stats-bar { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .perm-stats-bar { grid-template-columns: 1fr; }
+        }
+        .perm-stat-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .perm-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -4px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+        .perm-stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .perm-stat-info { flex: 1; }
+        .perm-stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+        }
+        .perm-stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* Role List Enhancement */
+        .role-list {
+            max-height: calc(100vh - 340px);
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .role-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .role-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: transparent;
+            border-radius: 0 3px 3px 0;
+            transition: all 0.3s ease;
+        }
+        .role-item:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            transform: translateX(2px);
+        }
+        .role-item.active {
+            background: linear-gradient(135deg, #eff6ff 0%, #fff 100%);
+            border-color: #bfdbfe;
+            box-shadow: 0 2px 8px rgba(30,90,168,0.08);
+        }
+        .role-item.active::before {
+            background: #1e5aa8;
+        }
+        .role-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .role-item:hover .role-avatar {
+            transform: scale(1.08);
+        }
+        .role-info { flex: 1; min-width: 0; }
+        .role-name { font-weight: 600; font-size: 14px; color: #1e293b; }
+        .role-desc { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+        .role-count {
+            font-size: 12px;
+            padding: 4px 10px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .role-item.active .role-count {
+            background: #1e5aa8;
+            color: white;
+        }
+        .role-users-preview {
+            display: flex;
+            margin-top: 6px;
+            gap: -4px;
+        }
+        .role-user-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            color: white;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            margin-left: -6px;
+            transition: transform 0.2s;
+        }
+        .role-user-avatar:first-child { margin-left: 0; }
+        .role-item:hover .role-user-avatar {
+            transform: translateY(-2px);
+        }
+        .role-more-users {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            margin-left: -6px;
+            font-weight: 600;
+        }
+
+        /* Permission Matrix Enhancement */
+        .perm-matrix {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: white;
+        }
+        .perm-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+        .perm-table thead th {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 12px 14px;
+            text-align: center;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+        .perm-table thead th:first-child {
+            text-align: left;
+            min-width: 200px;
+            border-radius: 10px 0 0 0;
+        }
+        .perm-table thead th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+        .perm-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            transition: background 0.2s;
+        }
+        .perm-table tbody tr:hover td {
+            background: #fafafa;
+        }
+        .perm-table tbody tr:last-child td:first-child { border-radius: 0 0 0 10px; }
+        .perm-table tbody tr:last-child td:last-child { border-radius: 0 0 10px 0; }
+
+        .perm-module {
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .perm-module-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            background: #f1f5f9;
+            color: #1e5aa8;
+            transition: all 0.3s;
+        }
+        .perm-table tbody tr:hover .perm-module-icon {
+            background: #1e5aa8;
+            color: white;
+            transform: scale(1.1);
+        }
+        .perm-action-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .perm-action-name { font-weight: 600; }
+        .perm-action-desc { font-size: 11px; color: #94a3b8; font-weight: 400; }
+
+        .perm-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            margin: 0 auto;
+            background: white;
+        }
+        .perm-check:hover {
+            border-color: #1e5aa8;
+            box-shadow: 0 0 0 3px rgba(30,90,168,0.1);
+        }
+        .perm-check.checked {
+            background: linear-gradient(135deg, #1e5aa8, #3b82f6);
+            border-color: #1e5aa8;
+            transform: scale(1.05);
+        }
+        .perm-check.checked::after {
+            content: '00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: white;
+            font-size: 11px;
+        }
+        .perm-check.partial {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            border-color: #f59e0b;
+        }
+        .perm-check.partial::after {
+            content: '068';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: white;
+            font-size: 9px;
+        }
+
+        /* Permission Summary Bar */
+        .perm-summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .perm-summary-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+        .perm-summary-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .perm-summary-dot.all { background: #10b981; }
+        .perm-summary-dot.partial { background: #f59e0b; }
+        .perm-summary-dot.none { background: #cbd5e1; }
+
+        /* Role Detail Panel (right side enhancement) */
+        .role-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .role-detail-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .role-detail-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .role-detail-info p {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .role-detail-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .role-detail-tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        /* Enhanced Modal for Permission Page */
+        .perm-modal .modal-box {
+            max-width: 520px;
+            padding: 0;
+            overflow: hidden;
+        }
+        .perm-modal-header {
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .perm-modal-body {
+            padding: 20px 28px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .perm-modal-footer {
+            padding: 16px 28px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid #f1f5f9;
+        }
+        .perm-user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .perm-user-item:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .perm-user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e5aa8, #60a5fa);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .perm-user-info { flex: 1; }
+        .perm-user-name { font-weight: 600; font-size: 13px; color: #1e293b; }
+        .perm-user-dept { font-size: 12px; color: #94a3b8; }
+
+        /* Management layout responsive */
+        .mgmt-layout {
+            display: flex;
+            gap: 20px;
+        }
+        @media (max-width: 1024px) {
+            .mgmt-layout { flex-direction: column; }
+            .mgmt-layout .mgmt-card:first-child { width: 100% !important; }
+        }
+
+        /* Animations */
+        @keyframes permFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .perm-animate {
+            animation: permFadeIn 0.4s ease forwards;
+        }
+        .perm-table tbody tr {
+            animation: permFadeIn 0.3s ease forwards;
+        }
+        .perm-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+        .perm-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
+        .perm-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
+        .perm-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
+        .perm-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
+        .perm-table tbody tr:nth-child(6) { animation-delay: 0.3s; }
+        .perm-table tbody tr:nth-child(7) { animation-delay: 0.35s; }
+        .perm-table tbody tr:nth-child(8) { animation-delay: 0.4s; }
+        .perm-table tbody tr:nth-child(9) { animation-delay: 0.45s; }
+        .perm-table tbody tr:nth-child(10) { animation-delay: 0.5s; }
+</style>
 <base target="_blank">
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
@@ -2090,7 +2535,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('notification','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('notification','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('notification')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('notification')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2152,7 +2597,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('message','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('message','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('message')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('message')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2269,7 +2714,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('quick-systems','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('quick-systems','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('quick-systems')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('quick-systems')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2329,7 +2774,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('notice','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('notice','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('notice')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('notice')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2381,7 +2826,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('headline','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('headline','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('headline')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('headline')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2441,7 +2886,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('org-news','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('org-news','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('org-news')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('org-news')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2493,7 +2938,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('gov-news','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('gov-news','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('gov-news')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('gov-news')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2544,7 +2989,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('internal-control','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('internal-control','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('internal-control')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('internal-control')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2590,7 +3035,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('party','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('party','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('party')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('party')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2650,7 +3095,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('report','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('report','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('report')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('report')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2702,7 +3147,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('digital','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('digital','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('digital')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('digital')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2762,7 +3207,7 @@
                                 <div class="dropdown-item" onclick="changeCardSize('digital-notice','medium')" data-i18n="size.medium">中尺寸 (占 1/2 行)</div>
                                 <div class="dropdown-item" onclick="changeCardSize('digital-notice','large')" data-i18n="size.large">大尺寸 (占满整行)</div>
                                 <div class="border-t border-slate-100 my-1"></div>
-                                <div class="dropdown-item delete" onclick="removeCard('digital-notice')"><i class="fas fa-trash-alt text-xs"></i>  data-i18n="card.delete">删除卡片</div>
+                                <div class="dropdown-item delete" onclick="removeCard('digital-notice')" data-i18n="card.delete"><i class="fas fa-trash-alt text-xs"></i> 删除卡片</div>
                             </div>
                         </div>
                     </div>
@@ -2858,29 +3303,83 @@
             </div>
         </div>
         <div class="page-body">
+            <!-- Stats Bar -->
+            <div class="perm-stats-bar perm-animate">
+                <div class="perm-stat-card">
+                    <div class="perm-stat-icon bg-blue-50 text-blue-600"><i class="fas fa-user-tag"></i></div>
+                    <div class="perm-stat-info">
+                        <div class="perm-stat-value" id="permStatRoles">4</div>
+                        <div class="perm-stat-label">角色总数</div>
+                    </div>
+                </div>
+                <div class="perm-stat-card">
+                    <div class="perm-stat-icon bg-green-50 text-green-600"><i class="fas fa-users"></i></div>
+                    <div class="perm-stat-info">
+                        <div class="perm-stat-value" id="permStatUsers">68</div>
+                        <div class="perm-stat-label">已分配人员</div>
+                    </div>
+                </div>
+                <div class="perm-stat-card">
+                    <div class="perm-stat-icon bg-amber-50 text-amber-600"><i class="fas fa-th-large"></i></div>
+                    <div class="perm-stat-info">
+                        <div class="perm-stat-value" id="permStatModules">10</div>
+                        <div class="perm-stat-label">权限模块</div>
+                    </div>
+                </div>
+                <div class="perm-stat-card">
+                    <div class="perm-stat-icon bg-purple-50 text-purple-600"><i class="fas fa-shield-alt"></i></div>
+                    <div class="perm-stat-info">
+                        <div class="perm-stat-value" id="permStatPerms">60</div>
+                        <div class="perm-stat-label">权限节点</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="mgmt-layout">
-                <div class="mgmt-card" style="width:320px; flex-shrink:0;">
+                <!-- Role List -->
+                <div class="mgmt-card" style="width:340px; flex-shrink:0;">
                     <div class="mgmt-card-header">
-                        <span class="font-semibold" data-i18n="role.list">角色列表</span>
-                        <span class="text-xs text-slate-400" id="roleCount">4 个角色</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-id-badge text-primary"></i>
+                            <span class="font-semibold" data-i18n="role.list">角色列表</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 bg-slate-100 text-slate-500 rounded-full font-medium" id="roleCount">4 个角色</span>
                     </div>
                     <div class="mgmt-card-body p-0">
                         <div class="role-list" id="roleList"></div>
                     </div>
                 </div>
+
+                <!-- Permission Matrix -->
                 <div class="mgmt-card" style="flex:1;">
-                    <div class="mgmt-card-header">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold" data-i18n="perm.matrix">权限矩阵</span>
-                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full" id="currentRoleBadge">管理员</span>
+                    <div class="role-detail-header" id="roleDetailHeader">
+                        <div class="role-detail-avatar" id="roleDetailAvatar" style="background: linear-gradient(135deg, #ef4444, #f87171);">管</div>
+                        <div class="role-detail-info">
+                            <h3 id="roleDetailName">系统管理员</h3>
+                            <p id="roleDetailDesc">拥有所有权限 · 3位成员</p>
+                            <div class="role-detail-tags" id="roleDetailTags">
+                                <span class="role-detail-tag">全部权限</span>
+                                <span class="role-detail-tag">系统级</span>
+                            </div>
                         </div>
-                        <button class="tool-btn" onclick="savePermissions()">
-                            <i class="fas fa-save"></i>
-                            <span data-i18n="btn.save">保存</span>
-                        </button>
                     </div>
-                    <div class="mgmt-card-body">
+                    <div class="mgmt-card-body" style="padding-top: 12px;">
+                        <div class="perm-summary" id="permSummary">
+                            <div class="perm-summary-item"><span class="perm-summary-dot all"></span> 完全权限</div>
+                            <div class="perm-summary-item"><span class="perm-summary-dot partial"></span> 部分权限</div>
+                            <div class="perm-summary-item"><span class="perm-summary-dot none"></span> 无权限</div>
+                        </div>
                         <div class="perm-matrix" id="permMatrix"></div>
+                    </div>
+                    <div class="mgmt-card-body" style="border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 10px;">
+                        <button class="tool-btn" onclick="resetRolePerms()">
+                            <i class="fas fa-undo"></i>
+                            <span>重置权限</span>
+                        </button>
+                        <button class="tool-btn primary" onclick="savePermissions()">
+                            <i class="fas fa-save"></i>
+                            <span data-i18n="btn.save">保存配置</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3726,7 +4225,7 @@
                 "card.headline": "中检头条",
                 "card.org.news": "机构动态",
                 "card.gov.news": "国资动态",
-                "card.internal.control": ""1+N"内控体系专栏",
+                "card.internal.control": "\"1+N\"内控体系专栏",
                 "card.party": "党建专栏",
                 "card.report": "违纪举报",
                 "card.digital": "数字中检",
@@ -3919,7 +4418,7 @@
                 "card.headline": "CCIC News",
                 "card.org.news": "Company News",
                 "card.gov.news": "SOE News",
-                "card.internal.control": ""1+N" Internal Control",
+                "card.internal.control": "\"1+N\" Internal Control",
                 "card.party": "Party Affairs",
                 "card.report": "Violation Reporting",
                 "card.digital": "Digital CCIC",
@@ -4097,18 +4596,33 @@
     <script>
     // ===== Page Router =====
     window.navigateTo = function(pageId) {
+        // Hide all pages
         document.querySelectorAll('.app-page').forEach(p => {
             p.style.display = 'none';
             p.classList.remove('active');
         });
+
+        // Show target page
         const target = document.getElementById('page-' + pageId);
         if (target) {
             target.style.display = 'block';
             target.classList.add('active');
-            if (pageId === 'menu-mgmt') initMenuMgmt();
-            if (pageId === 'permission-mgmt') initPermMgmt();
+            if (pageId === 'menu-mgmt') {
+                setTimeout(() => initMenuMgmt(), 50);
+            }
+            if (pageId === 'permission-mgmt') {
+                setTimeout(() => initPermMgmt(), 50);
+            }
         }
-        window.location.hash = pageId === 'home' ? '' : pageId;
+
+        // Update URL hash
+        if (pageId === 'home') {
+            history.pushState(null, null, ' ');
+        } else {
+            window.location.hash = pageId;
+        }
+
+        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -4131,7 +4645,7 @@
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             const menuItem = document.querySelector('[onclick*="permission-mgmt"]');
             if (menuItem) menuItem.classList.add('active');
-        } else {
+        } else if (hash === '' || hash === 'home') {
             navigateTo('home');
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             const homeItem = document.querySelector('.menu-item[onclick*="home"]');
@@ -4142,14 +4656,24 @@
     // 页面加载时检查 hash
     document.addEventListener('DOMContentLoaded', () => {
         const hash = window.location.hash.replace('#', '');
-        if (hash === 'menu-mgmt' || hash === 'permission-mgmt') {
-            window.dispatchEvent(new Event('hashchange'));
+        if (hash === 'menu-mgmt') {
+            navigateTo('menu-mgmt');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            const menuItem = document.querySelector('[onclick*="menu-mgmt"]');
+            if (menuItem) menuItem.classList.add('active');
+        } else if (hash === 'permission-mgmt') {
+            navigateTo('permission-mgmt');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            const menuItem = document.querySelector('[onclick*="permission-mgmt"]');
+            if (menuItem) menuItem.classList.add('active');
         } else {
             const homePage = document.getElementById('page-home');
             if (homePage) {
                 homePage.style.display = 'block';
                 homePage.classList.add('active');
             }
+            const homeItem = document.querySelector('.menu-item[onclick*="home"]');
+            if (homeItem) homeItem.classList.add('active');
         }
     });
 
@@ -4571,25 +5095,35 @@
     function renderRoleList() {
         const container = document.getElementById('roleList');
         if (!container) return;
-        container.innerHTML = rolesData.map(role => `
+        container.innerHTML = rolesData.map(role => {
+            const userAvatars = role.users.slice(0, 3).map((u, i) => 
+                `<div class="role-user-avatar" style="z-index:${3-i}">${u.charAt(0)}</div>`
+            ).join('');
+            const moreUsers = role.users.length > 3 ? `<div class="role-more-users">+${role.users.length - 3}</div>` : '';
+            return `
             <div class="role-item ${role.id === currentRoleId ? 'active' : ''}" onclick="selectRole('${role.id}')">
-                <div class="role-avatar" style="background:${role.color}">${role.name.charAt(0)}</div>
+                <div class="role-avatar" style="background: linear-gradient(135deg, ${role.color}, ${role.color}dd)">${role.name.charAt(0)}</div>
                 <div class="role-info">
                     <div class="role-name">${role.name}</div>
                     <div class="role-desc">${role.desc}</div>
+                    <div class="role-users-preview">
+                        ${userAvatars}${moreUsers}
+                    </div>
                 </div>
                 <span class="role-count">${role.count}人</span>
             </div>
-        `).join('');
-
-        const badge = document.getElementById('currentRoleBadge');
-        if (badge) {
-            const role = rolesData.find(r => r.id === currentRoleId);
-            badge.textContent = role ? role.name : '';
-        }
+            `;
+        }).join('');
 
         const countEl = document.getElementById('roleCount');
         if (countEl) countEl.textContent = rolesData.length + ' 个角色';
+
+        // Update stats
+        const totalUsers = rolesData.reduce((sum, r) => sum + r.count, 0);
+        const statUsers = document.getElementById('permStatUsers');
+        const statRoles = document.getElementById('permStatRoles');
+        if (statUsers) statUsers.textContent = totalUsers;
+        if (statRoles) statRoles.textContent = rolesData.length;
     }
 
     window.selectRole = function(roleId) {
@@ -4598,34 +5132,103 @@
         renderPermMatrix();
     };
 
+    window.resetRolePerms = function() {
+        if (!confirm('确定要重置当前角色的所有权限吗？')) return;
+        const role = rolesData.find(r => r.id === currentRoleId);
+        if (!role) return;
+
+        // Reset based on role type
+        permModules.forEach(m => {
+            if (!permMatrix[currentRoleId]) permMatrix[currentRoleId] = {};
+            permMatrix[currentRoleId][m.id] = {};
+            permActions.forEach(a => {
+                if (currentRoleId === 'admin') {
+                    permMatrix[currentRoleId][m.id][a.key] = true;
+                } else if (currentRoleId === 'manager') {
+                    permMatrix[currentRoleId][m.id][a.key] = ['view','add','edit','export','audit'].includes(a.key);
+                } else if (currentRoleId === 'operator') {
+                    permMatrix[currentRoleId][m.id][a.key] = ['view','add'].includes(a.key);
+                } else {
+                    permMatrix[currentRoleId][m.id][a.key] = a.key === 'view';
+                }
+            });
+        });
+        renderPermMatrix();
+        showToast('权限已重置为默认配置');
+    };
+
     function renderPermMatrix() {
         const container = document.getElementById('permMatrix');
         if (!container) return;
 
         const rolePerms = permMatrix[currentRoleId] || {};
+        const role = rolesData.find(r => r.id === currentRoleId);
+
+        // Update role detail header
+        const detailAvatar = document.getElementById('roleDetailAvatar');
+        const detailName = document.getElementById('roleDetailName');
+        const detailDesc = document.getElementById('roleDetailDesc');
+        const detailTags = document.getElementById('roleDetailTags');
+
+        if (detailAvatar && role) {
+            detailAvatar.textContent = role.name.charAt(0);
+            detailAvatar.style.background = `linear-gradient(135deg, ${role.color}, ${role.color}dd)`;
+        }
+        if (detailName && role) detailName.textContent = role.name;
+        if (detailDesc && role) detailDesc.textContent = `${role.desc} · ${role.count}位成员`;
+        if (detailTags && role) {
+            const allPerms = permActions.length;
+            const grantedPerms = Object.values(rolePerms).reduce((sum, m) => sum + Object.values(m).filter(Boolean).length, 0);
+            const totalPossible = permModules.length * permActions.length;
+            const permPercent = Math.round((grantedPerms / totalPossible) * 100);
+
+            let tagHtml = '';
+            if (permPercent >= 90) {
+                tagHtml = `<span class="role-detail-tag" style="background:#d1fae5;color:#059669">全部权限 · ${permPercent}%</span>`;
+            } else if (permPercent >= 50) {
+                tagHtml = `<span class="role-detail-tag" style="background:#fef3c7;color:#b45309">部分权限 · ${permPercent}%</span>`;
+            } else {
+                tagHtml = `<span class="role-detail-tag" style="background:#fee2e2;color:#dc2626">有限权限 · ${permPercent}%</span>`;
+            }
+            tagHtml += `<span class="role-detail-tag">${permModules.length}个模块</span>`;
+            detailTags.innerHTML = tagHtml;
+        }
 
         container.innerHTML = `
             <table class="perm-table">
                 <thead>
                     <tr>
-                        <th style="min-width:180px">功能模块</th>
-                        ${permActions.map(a => `<th class="perm-header-cell">${a.name}<div style="font-weight:400;font-size:11px;color:#94a3b8">${a.desc}</div></th>`).join('')}
+                        <th style="min-width:200px">功能模块</th>
+                        ${permActions.map(a => `
+                            <th class="perm-header-cell">
+                                <div class="perm-action-header">
+                                    <span class="perm-action-name">${a.name}</span>
+                                    <span class="perm-action-desc">${a.desc}</span>
+                                </div>
+                            </th>
+                        `).join('')}
                     </tr>
                 </thead>
                 <tbody>
-                    ${permModules.map(m => {
+                    ${permModules.map((m, idx) => {
                         const modulePerms = rolePerms[m.id] || {};
+                        const grantedCount = Object.values(modulePerms).filter(Boolean).length;
+                        const totalCount = permActions.length;
+                        const rowClass = grantedCount === totalCount ? 'all' : (grantedCount === 0 ? 'none' : 'partial');
+
                         return `
-                            <tr>
+                            <tr class="${rowClass}">
                                 <td>
                                     <div class="perm-module">
-                                        <i class="fas ${m.icon} text-primary" style="width:20px;text-align:center"></i>
-                                        ${m.name}
+                                        <div class="perm-module-icon"><i class="fas ${m.icon}"></i></div>
+                                        <span>${m.name}</span>
                                     </div>
                                 </td>
-                        ${permActions.map(a => `
+                                ${permActions.map(a => `
                                     <td style="text-align:center">
-                                        <div class="perm-check ${modulePerms[a.key] ? 'checked' : ''}" onclick="togglePerm('${m.id}', '${a.key}', this)"></div>
+                                        <div class="perm-check ${modulePerms[a.key] ? 'checked' : ''}" 
+                                             onclick="togglePerm('${m.id}', '${a.key}', this)"
+                                             title="${m.name} - ${a.name}"></div>
                                     </td>
                                 `).join('')}
                             </tr>
