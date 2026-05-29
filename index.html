@@ -209,7 +209,7 @@
         /* Banner - Fixed Full Width */
         .banner-section {
             width: 100%;
-            padding: 24px 24px 0px 24px;
+            padding: 0 24px;
             margin-bottom: 4px;
         }
         .banner-carousel {
@@ -260,7 +260,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 0px 16px;
+            padding: 0 24px 16px;
             border-bottom: 1px solid #e2e8f0;
             margin: 0 24px;
         }
@@ -1267,6 +1267,379 @@
             .layout-1col, .layout-2col, .layout-3col, .layout-customcol { grid-template-columns: 1fr; }
             .card-size-small, .card-size-medium, .card-size-large, .card-custom { grid-column: span 1 !important; }
         }
+
+        /* ===== Page System ===== */
+        .app-page {
+            display: none;
+            animation: pageFadeIn 0.35s ease;
+        }
+        .app-page.active {
+            display: block;
+        }
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Header */
+        .page-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+            position: sticky;
+            top: 64px;
+            z-index: 30;
+        }
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Page Body */
+        .page-body {
+            padding: 24px;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Management Card */
+        .mgmt-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .mgmt-card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, #fff, #fafafa);
+        }
+        .mgmt-card-body {
+            padding: 16px 20px;
+        }
+        .mgmt-layout {
+            display: flex;
+            gap: 20px;
+        }
+        @media (max-width: 1024px) {
+            .mgmt-layout { flex-direction: column; }
+            .mgmt-layout .mgmt-card { width: 100% !important; }
+        }
+
+        /* Search Box */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            width: 260px;
+        }
+        .search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 13px;
+            flex: 1;
+            color: #475569;
+        }
+        .search-box input::placeholder { color: #94a3b8; }
+
+        /* ===== Menu Tree ===== */
+        .menu-tree {
+            font-size: 13px;
+        }
+        .tree-node {
+            border-radius: 8px;
+            margin-bottom: 4px;
+            overflow: hidden;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .tree-node:hover {
+            border-color: #e2e8f0;
+        }
+        .tree-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            gap: 8px;
+        }
+        .tree-row:hover {
+            background: #f8fafc;
+        }
+        .tree-toggle {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: all 0.2s;
+            font-size: 10px;
+        }
+        .tree-toggle:hover { background: #e2e8f0; color: #475569; }
+        .tree-toggle.open { transform: rotate(90deg); }
+        .tree-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            flex-shrink: 0;
+        }
+        .tree-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .tree-name {
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tree-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .tree-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tree-row:hover .tree-actions { opacity: 1; }
+        .tree-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            transition: all 0.15s;
+            font-size: 11px;
+        }
+        .tree-btn:hover { background: #f1f5f9; color: #475569; }
+        .tree-btn.edit:hover { background: #eff6ff; color: #1e5aa8; }
+        .tree-btn.delete:hover { background: #fef2f2; color: #ef4444; }
+        .tree-children {
+            padding-left: 36px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .tree-children.open { max-height: 600px; }
+        .tree-badge {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .badge-enabled { background: #d1fae5; color: #059669; }
+        .badge-disabled { background: #f1f5f9; color: #94a3b8; }
+
+        /* Toggle Switch */
+        .switch-sm {
+            width: 36px;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .switch-sm.active { background: #1e5aa8; }
+        .switch-sm::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .switch-sm.active::after { transform: translateX(16px); }
+
+        /* ===== Role List ===== */
+        .role-list {
+            max-height: calc(100vh - 280px);
+            overflow-y: auto;
+        }
+        .role-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            border-bottom: 1px solid #f8fafc;
+        }
+        .role-item:hover { background: #f8fafc; }
+        .role-item.active {
+            background: #eff6ff;
+            border-left-color: #1e5aa8;
+        }
+        .role-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: white;
+            flex-shrink: 0;
+        }
+        .role-info { flex: 1; min-width: 0; }
+        .role-name { font-weight: 600; font-size: 13px; color: #1e293b; }
+        .role-desc { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .role-count {
+            font-size: 11px;
+            padding: 2px 8px;
+            background: #f1f5f9;
+            color: #64748b;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        /* ===== Permission Matrix ===== */
+        .perm-matrix {
+            overflow-x: auto;
+        }
+        .perm-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+        .perm-table th {
+            background: #f8fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        .perm-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .perm-table tr:hover td { background: #fafafa; }
+        .perm-module {
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .perm-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+        }
+        .perm-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .perm-check:hover { border-color: #1e5aa8; }
+        .perm-check.checked {
+            background: #1e5aa8;
+            border-color: #1e5aa8;
+        }
+        .perm-check.checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: white;
+            font-size: 10px;
+        }
+        .perm-header-cell {
+            text-align: center !important;
+        }
+
+        /* Modal Form */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+            color: #1e293b;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #1e5aa8;
+            box-shadow: 0 0 0 3px rgba(30,90,168,0.1);
+        }
+        .form-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
     </style>
 <base target="_blank">
 </head>
@@ -1374,7 +1747,7 @@
         <div class="pt-4 pb-2">
             <div class="sidebar-section-title" data-i18n="sidebar.office">办公协同</div>
             <nav>
-                <div class="menu-item active" onclick="selectMenu(this)">
+                <div class="menu-item active" onclick="selectMenu(this); navigateTo('home')">
                     <i class="fas fa-home menu-icon"></i>
                     <span class="menu-text" data-i18n="menu.home">首页</span>
                 </div>
@@ -1527,6 +1900,18 @@
             </nav>
         </div>
 
+            <div class="sidebar-section-title" data-i18n="sidebar.system">系统设置</div>
+            <nav>
+                <div class="menu-item" onclick="selectMenu(this); navigateTo('menu-mgmt')">
+                    <i class="fas fa-list-ul menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.menu.mgmt">菜单管理</span>
+                </div>
+                <div class="menu-item" onclick="selectMenu(this); navigateTo('permission-mgmt')">
+                    <i class="fas fa-user-shield menu-icon"></i>
+                    <span class="menu-text" data-i18n="menu.permission.mgmt">人员权限管理</span>
+                </div>
+            </nav>
+
         <!-- Sidebar Footer: Home Layout Settings Entry -->
         <div class="sidebar-footer">
             <div class="menu-item" onclick="toggleSettings()" style="color:#94a3b8;">
@@ -1538,6 +1923,9 @@
 
     <!-- Main Content -->
     <main id="mainContent" class="main-wrapper">
+
+    <!-- ====== PAGE: HOME ====== -->
+    <div id="page-home" class="app-page">
 
         <!-- Banner Section: Fixed, outside sortable grid -->
         <div class="banner-section">
@@ -2411,7 +2799,95 @@
             </div>
 
         </div>
-    </main>
+    
+    </div>
+
+    <!-- ====== PAGE: MENU MANAGEMENT ====== -->
+    <div id="page-menu-mgmt" class="app-page" style="display:none;">
+        <div class="page-header-bar">
+            <div class="page-title">
+                <i class="fas fa-list-ul text-primary"></i>
+                <span data-i18n="menu.menu.mgmt">菜单管理</span>
+            </div>
+            <div class="page-actions">
+                <button class="tool-btn primary" onclick="openMenuModal()">
+                    <i class="fas fa-plus"></i>
+                    <span data-i18n="btn.add">新增菜单</span>
+                </button>
+                <button class="tool-btn" onclick="saveMenuOrder()">
+                    <i class="fas fa-save"></i>
+                    <span data-i18n="btn.save.order">保存排序</span>
+                </button>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="mgmt-card">
+                <div class="mgmt-card-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-sitemap text-primary"></i>
+                        <span class="font-semibold" data-i18n="menu.tree">菜单结构</span>
+                    </div>
+                    <div class="search-box">
+                        <i class="fas fa-search text-slate-400"></i>
+                        <input type="text" placeholder="搜索菜单名称..." id="menuSearchInput" oninput="filterMenuTree(this.value)">
+                    </div>
+                </div>
+                <div class="mgmt-card-body">
+                    <div class="menu-tree" id="menuTree"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== PAGE: PERMISSION MANAGEMENT ====== -->
+    <div id="page-permission-mgmt" class="app-page" style="display:none;">
+        <div class="page-header-bar">
+            <div class="page-title">
+                <i class="fas fa-user-shield text-primary"></i>
+                <span data-i18n="menu.permission.mgmt">人员权限管理</span>
+            </div>
+            <div class="page-actions">
+                <button class="tool-btn primary" onclick="openRoleModal()">
+                    <i class="fas fa-plus"></i>
+                    <span data-i18n="btn.add.role">新增角色</span>
+                </button>
+                <button class="tool-btn" onclick="openAssignModal()">
+                    <i class="fas fa-user-plus"></i>
+                    <span data-i18n="btn.assign">分配人员</span>
+                </button>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="mgmt-layout">
+                <div class="mgmt-card" style="width:320px; flex-shrink:0;">
+                    <div class="mgmt-card-header">
+                        <span class="font-semibold" data-i18n="role.list">角色列表</span>
+                        <span class="text-xs text-slate-400" id="roleCount">4 个角色</span>
+                    </div>
+                    <div class="mgmt-card-body p-0">
+                        <div class="role-list" id="roleList"></div>
+                    </div>
+                </div>
+                <div class="mgmt-card" style="flex:1;">
+                    <div class="mgmt-card-header">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold" data-i18n="perm.matrix">权限矩阵</span>
+                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full" id="currentRoleBadge">管理员</span>
+                        </div>
+                        <button class="tool-btn" onclick="savePermissions()">
+                            <i class="fas fa-save"></i>
+                            <span data-i18n="btn.save">保存</span>
+                        </button>
+                    </div>
+                    <div class="mgmt-card-body">
+                        <div class="perm-matrix" id="permMatrix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
 
     <!-- Settings Panel (Right Side) -->
     <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
@@ -3341,6 +3817,19 @@
                 "card.weather.desc": "当前城市天气状况",
                 "card.calendar.desc": "今日待办日程",
 
+                // System Settings
+                "sidebar.system": "系统设置",
+                "menu.menu.mgmt": "菜单管理",
+                "menu.permission.mgmt": "人员权限管理",
+                "btn.add": "新增",
+                "btn.add.role": "新增角色",
+                "btn.save.order": "保存排序",
+                "btn.assign": "分配人员",
+                "btn.save": "保存",
+                "menu.tree": "菜单结构",
+                "role.list": "角色列表",
+                "perm.matrix": "权限矩阵",
+
                 // Misc
                 "lang.zh": "简体中文",
                 "lang.en": "English",
@@ -3521,6 +4010,19 @@
                 "card.weather.desc": "Local weather conditions",
                 "card.calendar.desc": "Today's agenda",
 
+                // System Settings
+                "sidebar.system": "System Settings",
+                "menu.menu.mgmt": "Menu Management",
+                "menu.permission.mgmt": "Permission Management",
+                "btn.add": "Add",
+                "btn.add.role": "Add Role",
+                "btn.save.order": "Save Order",
+                "btn.assign": "Assign Users",
+                "btn.save": "Save",
+                "menu.tree": "Menu Structure",
+                "role.list": "Role List",
+                "perm.matrix": "Permission Matrix",
+
                 // Misc
                 "lang.zh": "简体中文",
                 "lang.en": "English",
@@ -3588,6 +4090,694 @@
             applyLang(currentLang);
         });
     })();
+    </script>
+
+
+    <!-- ==================== Page Router & Management Logic ==================== -->
+    <script>
+    // ===== Page Router =====
+    window.navigateTo = function(pageId) {
+        document.querySelectorAll('.app-page').forEach(p => {
+            p.style.display = 'none';
+            p.classList.remove('active');
+        });
+        const target = document.getElementById('page-' + pageId);
+        if (target) {
+            target.style.display = 'block';
+            target.classList.add('active');
+            if (pageId === 'menu-mgmt') initMenuMgmt();
+            if (pageId === 'permission-mgmt') initPermMgmt();
+        }
+        window.location.hash = pageId === 'home' ? '' : pageId;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // 首页菜单点击
+    window.selectMenu = function(el) {
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        el.classList.add('active');
+    };
+
+    // 监听 hash 变化
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash.replace('#', '');
+        if (hash === 'menu-mgmt') {
+            navigateTo('menu-mgmt');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            const menuItem = document.querySelector('[onclick*="menu-mgmt"]');
+            if (menuItem) menuItem.classList.add('active');
+        } else if (hash === 'permission-mgmt') {
+            navigateTo('permission-mgmt');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            const menuItem = document.querySelector('[onclick*="permission-mgmt"]');
+            if (menuItem) menuItem.classList.add('active');
+        } else {
+            navigateTo('home');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            const homeItem = document.querySelector('.menu-item[onclick*="home"]');
+            if (homeItem) homeItem.classList.add('active');
+        }
+    });
+
+    // 页面加载时检查 hash
+    document.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash.replace('#', '');
+        if (hash === 'menu-mgmt' || hash === 'permission-mgmt') {
+            window.dispatchEvent(new Event('hashchange'));
+        } else {
+            const homePage = document.getElementById('page-home');
+            if (homePage) {
+                homePage.style.display = 'block';
+                homePage.classList.add('active');
+            }
+        }
+    });
+
+    // ===== Menu Management Data & Logic =====
+    const menuData = [
+        {
+            id: 'office', name: '办公协同', icon: 'fa-briefcase', color: '#3b82f6', enabled: true,
+            children: [
+                { id: 'home', name: '首页', icon: 'fa-home', enabled: true, path: '/home' },
+                { id: 'contract', name: '合同订单', icon: 'fa-file-contract', enabled: true, path: '/contract',
+                  children: [
+                    { id: 'contract-draft', name: '合同起草', enabled: true },
+                    { id: 'order-mgmt', name: '订单管理', enabled: true },
+                    { id: 'approval-flow', name: '审批流程', enabled: true }
+                  ]
+                },
+                { id: 'backbone', name: '主干系统', icon: 'fa-sitemap', enabled: true, path: '/backbone',
+                  children: [
+                    { id: 'biz-mgmt', name: '业务管理', enabled: true },
+                    { id: 'data-report', name: '数据报表', enabled: true,
+                      children: [
+                        { id: 'monthly', name: '月度报表', enabled: true },
+                        { id: 'quarterly', name: '季度分析', enabled: true },
+                        { id: 'annual', name: '年度汇总', enabled: true }
+                      ]
+                    },
+                    { id: 'sys-config', name: '系统配置', enabled: true }
+                  ]
+                },
+                { id: 'sims', name: 'SIMS系统', icon: 'fa-database', enabled: true, path: '/sims' },
+                { id: 'onsite', name: '现场实施', icon: 'fa-hard-hat', enabled: true, path: '/onsite',
+                  children: [
+                    { id: 'task-dispatch', name: '任务派发', enabled: true },
+                    { id: 'progress', name: '进度跟踪', enabled: true },
+                    { id: 'feedback', name: '现场反馈', enabled: true }
+                  ]
+                }
+            ]
+        },
+        {
+            id: 'management', name: '经营管理', icon: 'fa-chart-line', color: '#10b981', enabled: true,
+            children: [
+                { id: 'lims', name: 'LIMS实验室', icon: 'fa-flask', enabled: true, path: '/lims',
+                  children: [
+                    { id: 'industry', name: '行业版本', enabled: true,
+                      children: [
+                        { id: 'lims-petro', name: 'LIMS-石化/化工', enabled: true },
+                        { id: 'lims-food', name: 'LIMS-食品/农产品', enabled: true },
+                        { id: 'lims-env', name: 'LIMS-资源/环境', enabled: true }
+                      ]
+                    },
+                    { id: 'test-mgmt', name: '检测管理', enabled: true },
+                    { id: 'equip-mgmt', name: '设备管理', enabled: true }
+                  ]
+                },
+                { id: 'cert', name: '证书报告', icon: 'fa-certificate', enabled: true, path: '/cert' },
+                { id: 'sample', name: '样品管理', icon: 'fa-vials', enabled: true, path: '/sample' },
+                { id: 'coal', name: '陆运煤炭采信', icon: 'fa-train', enabled: true, path: '/coal' }
+            ]
+        },
+        {
+            id: 'functions', name: '职能管理', icon: 'fa-cogs', color: '#8b5cf6', enabled: true,
+            children: [
+                { id: 'hr', name: '人力资源', icon: 'fa-users', enabled: true, path: '/hr',
+                  children: [
+                    { id: 'org-structure', name: '组织架构', enabled: true },
+                    { id: 'employee', name: '员工档案', enabled: true },
+                    { id: 'attendance', name: '考勤管理', enabled: true }
+                  ]
+                },
+                { id: 'finance', name: '财务系统', icon: 'fa-coins', enabled: true, path: '/finance' },
+                { id: 'invest', name: '投资管理', icon: 'fa-handshake', enabled: true, path: '/invest' }
+            ]
+        },
+        {
+            id: 'party', name: '党建监督', icon: 'fa-flag', color: '#ef4444', enabled: true,
+            children: [
+                { id: 'party-mgmt', name: '党建管理', icon: 'fa-flag', enabled: true, path: '/party',
+                  children: [
+                    { id: 'central-spirit', name: '中央精神', enabled: true },
+                    { id: 'rules', name: '制度规范', enabled: true },
+                    { id: 'study', name: '学习教育', enabled: true }
+                  ]
+                },
+                { id: 'supervision', name: '监督管理', icon: 'fa-eye', enabled: true, path: '/supervision' },
+                { id: 'violation', name: '违纪举报', icon: 'fa-exclamation-triangle', enabled: true, path: '/violation' }
+            ]
+        },
+        {
+            id: 'support', name: '支撑平台', icon: 'fa-th-large', color: '#64748b', enabled: true,
+            children: [
+                { id: 'stats', name: '统计分析', icon: 'fa-chart-bar', enabled: true, path: '/stats' },
+                { id: 'app-center', name: '应用中心', icon: 'fa-th-large', enabled: true, path: '/app-center' },
+                { id: 'help', name: '帮助中心', icon: 'fa-question-circle', enabled: true, path: '/help' }
+            ]
+        },
+        {
+            id: 'system', name: '系统设置', icon: 'fa-cog', color: '#f59e0b', enabled: true,
+            children: [
+                { id: 'menu-mgmt', name: '菜单管理', icon: 'fa-list-ul', enabled: true, path: '/system/menu' },
+                { id: 'permission-mgmt', name: '人员权限管理', icon: 'fa-user-shield', enabled: true, path: '/system/permission' }
+            ]
+        }
+    ];
+
+    let menuTreeExpanded = new Set(['office', 'management', 'functions', 'party', 'support', 'system']);
+
+    function initMenuMgmt() {
+        renderMenuTree();
+    }
+
+    function renderMenuTree() {
+        const container = document.getElementById('menuTree');
+        if (!container) return;
+        container.innerHTML = renderMenuNodes(menuData, 0);
+    }
+
+    function renderMenuNodes(nodes, level) {
+        return nodes.map(node => {
+            const hasChildren = node.children && node.children.length > 0;
+            const isExpanded = menuTreeExpanded.has(node.id);
+            const indent = level * 24;
+            const iconColor = node.color || '#94a3b8';
+
+            return `
+                <div class="tree-node" style="margin-left:${indent}px" data-id="${node.id}">
+                    <div class="tree-row">
+                        ${hasChildren ? `<div class="tree-toggle ${isExpanded ? 'open' : ''}" onclick="toggleMenuNode('${node.id}', event)"><i class="fas fa-chevron-right"></i></div>` : '<div style="width:20px"></div>'}
+                        <div class="tree-icon" style="background:${iconColor}"><i class="fas ${node.icon || 'fa-circle'}" style="font-size:11px"></i></div>
+                        <div class="tree-info">
+                            <div class="tree-name">
+                                ${node.name}
+                                <span class="tree-badge ${node.enabled ? 'badge-enabled' : 'badge-disabled'}">${node.enabled ? '启用' : '禁用'}</span>
+                            </div>
+                            <div class="tree-meta">${node.path || ''} · ID: ${node.id}</div>
+                        </div>
+                        <div class="tree-actions">
+                            <div class="switch-sm ${node.enabled ? 'active' : ''}" onclick="toggleMenuEnabled('${node.id}', event)"></div>
+                            <button class="tree-btn edit" onclick="editMenu('${node.id}', event)" title="编辑"><i class="fas fa-pen"></i></button>
+                            <button class="tree-btn" onclick="addMenuChild('${node.id}', event)" title="添加子菜单"><i class="fas fa-plus"></i></button>
+                            <button class="tree-btn delete" onclick="deleteMenu('${node.id}', event)" title="删除"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                    ${hasChildren ? `<div class="tree-children ${isExpanded ? 'open' : ''}" id="children-${node.id}">${renderMenuNodes(node.children, level + 1)}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.toggleMenuNode = function(id, e) {
+        e.stopPropagation();
+        if (menuTreeExpanded.has(id)) {
+            menuTreeExpanded.delete(id);
+        } else {
+            menuTreeExpanded.add(id);
+        }
+        renderMenuTree();
+    };
+
+    window.toggleMenuEnabled = function(id, e) {
+        e.stopPropagation();
+        const node = findMenuNode(menuData, id);
+        if (node) {
+            node.enabled = !node.enabled;
+            renderMenuTree();
+            showToast(node.enabled ? '菜单已启用' : '菜单已禁用');
+        }
+    };
+
+    function findMenuNode(nodes, id) {
+        for (const node of nodes) {
+            if (node.id === id) return node;
+            if (node.children) {
+                const found = findMenuNode(node.children, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    window.editMenu = function(id, e) {
+        e.stopPropagation();
+        const node = findMenuNode(menuData, id);
+        if (!node) return;
+        openMenuModal(node);
+    };
+
+    window.addMenuChild = function(parentId, e) {
+        e.stopPropagation();
+        openMenuModal(null, parentId);
+    };
+
+    window.deleteMenu = function(id, e) {
+        e.stopPropagation();
+        if (!confirm('确定要删除此菜单吗？子菜单将一并删除。')) return;
+        deleteMenuNode(menuData, id);
+        renderMenuTree();
+        showToast('菜单已删除');
+    };
+
+    function deleteMenuNode(nodes, id) {
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            if (nodes[i].id === id) {
+                nodes.splice(i, 1);
+                return true;
+            }
+            if (nodes[i].children && deleteMenuNode(nodes[i].children, id)) return true;
+        }
+        return false;
+    }
+
+    window.filterMenuTree = function(keyword) {
+        if (!keyword) {
+            renderMenuTree();
+            return;
+        }
+        const filtered = filterNodes(menuData, keyword.toLowerCase());
+        const container = document.getElementById('menuTree');
+        if (container) container.innerHTML = renderMenuNodes(filtered, 0);
+    };
+
+    function filterNodes(nodes, keyword) {
+        return nodes.filter(node => {
+            const match = node.name.toLowerCase().includes(keyword) || node.id.toLowerCase().includes(keyword);
+            if (node.children) {
+                const childMatch = filterNodes(node.children, keyword);
+                if (childMatch.length > 0) {
+                    node.children = childMatch;
+                    return true;
+                }
+            }
+            return match;
+        });
+    }
+
+    window.saveMenuOrder = function() {
+        showToast('菜单排序已保存');
+    };
+
+    window.openMenuModal = function(node, parentId) {
+        const isEdit = !!node;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay open';
+        modal.style.zIndex = '3000';
+        modal.innerHTML = `
+            <div class="modal-box" style="max-width: 480px;">
+                <h3 class="text-lg font-bold mb-4">${isEdit ? '编辑菜单' : '新增菜单'}</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">菜单名称</label>
+                        <input type="text" class="form-input" id="menuName" value="${isEdit ? node.name : ''}" placeholder="请输入菜单名称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">菜单标识</label>
+                        <input type="text" class="form-input" id="menuId" value="${isEdit ? node.id : ''}" placeholder="唯一标识，如: home">
+                        <div class="form-hint">用于路由和权限控制</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">图标</label>
+                        <select class="form-select" id="menuIcon">
+                            <option value="fa-home" ${isEdit && node.icon === 'fa-home' ? 'selected' : ''}>🏠 首页</option>
+                            <option value="fa-file-contract" ${isEdit && node.icon === 'fa-file-contract' ? 'selected' : ''}>📄 合同</option>
+                            <option value="fa-sitemap" ${isEdit && node.icon === 'fa-sitemap' ? 'selected' : ''}>🌐 系统</option>
+                            <option value="fa-database" ${isEdit && node.icon === 'fa-database' ? 'selected' : ''}>💾 数据</option>
+                            <option value="fa-hard-hat" ${isEdit && node.icon === 'fa-hard-hat' ? 'selected' : ''}>⛑️ 现场</option>
+                            <option value="fa-flask" ${isEdit && node.icon === 'fa-flask' ? 'selected' : ''}>🧪 实验</option>
+                            <option value="fa-certificate" ${isEdit && node.icon === 'fa-certificate' ? 'selected' : ''}>📜 证书</option>
+                            <option value="fa-users" ${isEdit && node.icon === 'fa-users' ? 'selected' : ''}>👥 人员</option>
+                            <option value="fa-coins" ${isEdit && node.icon === 'fa-coins' ? 'selected' : ''}>💰 财务</option>
+                            <option value="fa-flag" ${isEdit && node.icon === 'fa-flag' ? 'selected' : ''}>🚩 党建</option>
+                            <option value="fa-cog" ${isEdit && node.icon === 'fa-cog' ? 'selected' : ''}>⚙️ 设置</option>
+                            <option value="fa-list-ul" ${isEdit && node.icon === 'fa-list-ul' ? 'selected' : ''}>📋 列表</option>
+                            <option value="fa-user-shield" ${isEdit && node.icon === 'fa-user-shield' ? 'selected' : ''}>🛡️ 权限</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">路由路径</label>
+                        <input type="text" class="form-input" id="menuPath" value="${isEdit ? (node.path || '') : ''}" placeholder="如: /home">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">上级菜单</label>
+                    <select class="form-select" id="menuParent">
+                        <option value="">作为一级菜单</option>
+                        ${renderParentOptions(menuData, 0, parentId || (isEdit ? findParentId(menuData, node.id) : ''))}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label flex items-center gap-2">
+                        <div class="switch-sm ${isEdit && node.enabled ? 'active' : ''}" id="menuEnabledToggle" onclick="this.classList.toggle('active')"></div>
+                        <span>启用状态</span>
+                    </label>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="saveMenu('${isEdit ? node.id : ''}')" class="flex-1 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">保存</button>
+                    <button onclick="this.closest('.modal-overlay').remove()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all">取消</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    };
+
+    function renderParentOptions(nodes, level, selectedId) {
+        let html = '';
+        nodes.forEach(node => {
+            const prefix = '　'.repeat(level);
+            html += `<option value="${node.id}" ${selectedId === node.id ? 'selected' : ''}>${prefix}${node.name}</option>`;
+            if (node.children) {
+                html += renderParentOptions(node.children, level + 1, selectedId);
+            }
+        });
+        return html;
+    }
+
+    function findParentId(nodes, targetId, parentId) {
+        for (const node of nodes) {
+            if (node.id === targetId) return parentId;
+            if (node.children) {
+                const found = findParentId(node.children, targetId, node.id);
+                if (found !== null) return found;
+            }
+        }
+        return null;
+    }
+
+    window.saveMenu = function(editId) {
+        const name = document.getElementById('menuName').value;
+        const id = document.getElementById('menuId').value;
+        const icon = document.getElementById('menuIcon').value;
+        const path = document.getElementById('menuPath').value;
+        const parentId = document.getElementById('menuParent').value;
+        const enabled = document.getElementById('menuEnabledToggle').classList.contains('active');
+
+        if (!name || !id) {
+            showToast('请填写完整信息');
+            return;
+        }
+
+        const newNode = { id, name, icon, path, enabled };
+        if (editId) {
+            const node = findMenuNode(menuData, editId);
+            if (node) {
+                Object.assign(node, newNode);
+            }
+        } else {
+            if (parentId) {
+                const parent = findMenuNode(menuData, parentId);
+                if (parent) {
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(newNode);
+                }
+            } else {
+                menuData.push(newNode);
+            }
+        }
+
+        document.querySelector('.modal-overlay.open').remove();
+        renderMenuTree();
+        showToast(editId ? '菜单已更新' : '菜单已创建');
+    };
+
+    // ===== Permission Management Data & Logic =====
+    const rolesData = [
+        { id: 'admin', name: '系统管理员', desc: '拥有所有权限', color: '#ef4444', count: 3, users: ['张三', '李四', '王五'] },
+        { id: 'manager', name: '部门经理', desc: '部门管理权限', color: '#f59e0b', count: 8, users: ['赵六', '钱七'] },
+        { id: 'operator', name: '普通操作员', desc: '日常操作权限', color: '#3b82f6', count: 45, users: ['孙八'] },
+        { id: 'viewer', name: '只读用户', desc: '仅查看权限', color: '#10b981', count: 12, users: ['周九'] }
+    ];
+
+    let currentRoleId = 'admin';
+
+    const permModules = [
+        { id: 'home', name: '首页', icon: 'fa-home' },
+        { id: 'contract', name: '合同订单', icon: 'fa-file-contract' },
+        { id: 'backbone', name: '主干系统', icon: 'fa-sitemap' },
+        { id: 'lims', name: 'LIMS实验室', icon: 'fa-flask' },
+        { id: 'cert', name: '证书报告', icon: 'fa-certificate' },
+        { id: 'hr', name: '人力资源', icon: 'fa-users' },
+        { id: 'finance', name: '财务系统', icon: 'fa-coins' },
+        { id: 'party', name: '党建监督', icon: 'fa-flag' },
+        { id: 'stats', name: '统计分析', icon: 'fa-chart-bar' },
+        { id: 'system', name: '系统设置', icon: 'fa-cog' },
+    ];
+
+    const permActions = [
+        { key: 'view', name: '查看', desc: '浏览数据' },
+        { key: 'add', name: '新增', desc: '创建数据' },
+        { key: 'edit', name: '编辑', desc: '修改数据' },
+        { key: 'delete', name: '删除', desc: '删除数据' },
+        { key: 'export', name: '导出', desc: '导出数据' },
+        { key: 'audit', name: '审批', desc: '审核流程' },
+    ];
+
+    const permMatrix = {
+        admin: {},
+        manager: {},
+        operator: {},
+        viewer: {}
+    };
+
+    function initPermMatrix() {
+        permModules.forEach(m => {
+            permMatrix.admin[m.id] = { view: true, add: true, edit: true, delete: true, export: true, audit: true };
+            permMatrix.manager[m.id] = { view: true, add: true, edit: true, delete: false, export: true, audit: true };
+            permMatrix.operator[m.id] = { view: true, add: true, edit: false, delete: false, export: false, audit: false };
+            permMatrix.viewer[m.id] = { view: true, add: false, edit: false, delete: false, export: false, audit: false };
+        });
+    }
+    initPermMatrix();
+
+    function initPermMgmt() {
+        renderRoleList();
+        renderPermMatrix();
+    }
+
+    function renderRoleList() {
+        const container = document.getElementById('roleList');
+        if (!container) return;
+        container.innerHTML = rolesData.map(role => `
+            <div class="role-item ${role.id === currentRoleId ? 'active' : ''}" onclick="selectRole('${role.id}')">
+                <div class="role-avatar" style="background:${role.color}">${role.name.charAt(0)}</div>
+                <div class="role-info">
+                    <div class="role-name">${role.name}</div>
+                    <div class="role-desc">${role.desc}</div>
+                </div>
+                <span class="role-count">${role.count}人</span>
+            </div>
+        `).join('');
+
+        const badge = document.getElementById('currentRoleBadge');
+        if (badge) {
+            const role = rolesData.find(r => r.id === currentRoleId);
+            badge.textContent = role ? role.name : '';
+        }
+
+        const countEl = document.getElementById('roleCount');
+        if (countEl) countEl.textContent = rolesData.length + ' 个角色';
+    }
+
+    window.selectRole = function(roleId) {
+        currentRoleId = roleId;
+        renderRoleList();
+        renderPermMatrix();
+    };
+
+    function renderPermMatrix() {
+        const container = document.getElementById('permMatrix');
+        if (!container) return;
+
+        const rolePerms = permMatrix[currentRoleId] || {};
+
+        container.innerHTML = `
+            <table class="perm-table">
+                <thead>
+                    <tr>
+                        <th style="min-width:180px">功能模块</th>
+                        ${permActions.map(a => `<th class="perm-header-cell">${a.name}<div style="font-weight:400;font-size:11px;color:#94a3b8">${a.desc}</div></th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${permModules.map(m => {
+                        const modulePerms = rolePerms[m.id] || {};
+                        return `
+                            <tr>
+                                <td>
+                                    <div class="perm-module">
+                                        <i class="fas ${m.icon} text-primary" style="width:20px;text-align:center"></i>
+                                        ${m.name}
+                                    </div>
+                                </td>
+                        ${permActions.map(a => `
+                                    <td style="text-align:center">
+                                        <div class="perm-check ${modulePerms[a.key] ? 'checked' : ''}" onclick="togglePerm('${m.id}', '${a.key}', this)"></div>
+                                    </td>
+                                `).join('')}
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    window.togglePerm = function(moduleId, actionKey, el) {
+        if (!permMatrix[currentRoleId]) permMatrix[currentRoleId] = {};
+        if (!permMatrix[currentRoleId][moduleId]) permMatrix[currentRoleId][moduleId] = {};
+        permMatrix[currentRoleId][moduleId][actionKey] = !permMatrix[currentRoleId][moduleId][actionKey];
+        el.classList.toggle('checked');
+    };
+
+    window.savePermissions = function() {
+        showToast('权限配置已保存');
+    };
+
+    window.openRoleModal = function() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay open';
+        modal.style.zIndex = '3000';
+        modal.innerHTML = `
+            <div class="modal-box" style="max-width: 420px;">
+                <h3 class="text-lg font-bold mb-4">新增角色</h3>
+                <div class="form-group">
+                    <label class="form-label">角色名称</label>
+                    <input type="text" class="form-input" id="roleName" placeholder="如：质检专员">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色描述</label>
+                    <input type="text" class="form-input" id="roleDesc" placeholder="简要描述角色职责">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色颜色</label>
+                    <div class="flex gap-2">
+                        ${['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'].map(c => `
+                            <div class="w-8 h-8 rounded-lg cursor-pointer border-2 ${c === '#3b82f6' ? 'border-slate-800' : 'border-transparent'}" style="background:${c}" onclick="selectRoleColor(this, '${c}')"></div>
+                        `).join('')}
+                    </div>
+                    <input type="hidden" id="roleColor" value="#3b82f6">
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="saveRole()" class="flex-1 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">保存</button>
+                    <button onclick="this.closest('.modal-overlay').remove()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all">取消</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    };
+
+    window.selectRoleColor = function(el, color) {
+        el.parentElement.querySelectorAll('div').forEach(d => d.classList.remove('border-slate-800'));
+        el.classList.add('border-slate-800');
+        document.getElementById('roleColor').value = color;
+    };
+
+    window.saveRole = function() {
+        const name = document.getElementById('roleName').value;
+        const desc = document.getElementById('roleDesc').value;
+        const color = document.getElementById('roleColor').value;
+        if (!name) { showToast('请填写角色名称'); return; }
+
+        const id = 'role_' + Date.now();
+        rolesData.push({ id, name, desc, color, count: 0, users: [] });
+        permMatrix[id] = {};
+        permModules.forEach(m => {
+            permMatrix[id][m.id] = { view: false, add: false, edit: false, delete: false, export: false, audit: false };
+        });
+
+        document.querySelector('.modal-overlay.open').remove();
+        renderRoleList();
+        showToast('角色已创建');
+    };
+
+    window.openAssignModal = function() {
+        const role = rolesData.find(r => r.id === currentRoleId);
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay open';
+        modal.style.zIndex = '3000';
+        modal.innerHTML = `
+            <div class="modal-box" style="max-width: 480px;">
+                <h3 class="text-lg font-bold mb-1">分配人员</h3>
+                <p class="text-xs text-slate-500 mb-4">为「${role ? role.name : ''}」角色分配用户</p>
+                <div class="search-box mb-4" style="width:100%">
+                    <i class="fas fa-search text-slate-400"></i>
+                    <input type="text" placeholder="搜索用户姓名或工号..." id="assignSearch" oninput="filterUsers(this.value)">
+                </div>
+                <div class="space-y-2 max-h-64 overflow-y-auto" id="userList">
+                    ${renderUserList()}
+                </div>
+                <div class="flex gap-3 mt-5">
+                    <button onclick="saveAssign()" class="flex-1 py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">确认分配</button>
+                    <button onclick="this.closest('.modal-overlay').remove()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all">取消</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    };
+
+    const allUsers = [
+        { id: 'u001', name: '张三', dept: '技术部', avatar: '张', assigned: true },
+        { id: 'u002', name: '李四', dept: '技术部', avatar: '李', assigned: true },
+        { id: 'u003', name: '王五', dept: '质检部', avatar: '王', assigned: false },
+        { id: 'u004', name: '赵六', dept: '业务部', avatar: '赵', assigned: false },
+        { id: 'u005', name: '钱七', dept: '财务部', avatar: '钱', assigned: false },
+        { id: 'u006', name: '孙八', dept: '人事部', avatar: '孙', assigned: false },
+        { id: 'u007', name: '周九', dept: '运营部', avatar: '周', assigned: false },
+        { id: 'u008', name: '吴十', dept: '市场部', avatar: '吴', assigned: false },
+    ];
+
+    function renderUserList(filter = '') {
+        return allUsers.filter(u => !filter || u.name.includes(filter) || u.dept.includes(filter)).map(u => `
+            <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="toggleUserAssign(this, '${u.id}')">
+                <div class="perm-check ${u.assigned ? 'checked' : ''}"></div>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center text-xs font-bold">${u.avatar}</div>
+                <div class="flex-1">
+                    <div class="text-sm font-medium">${u.name}</div>
+                    <div class="text-xs text-slate-500">${u.dept}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.filterUsers = function(keyword) {
+        const list = document.getElementById('userList');
+        if (list) list.innerHTML = renderUserList(keyword);
+    };
+
+    window.toggleUserAssign = function(el, userId) {
+        const check = el.querySelector('.perm-check');
+        check.classList.toggle('checked');
+        const user = allUsers.find(u => u.id === userId);
+        if (user) user.assigned = check.classList.contains('checked');
+    };
+
+    window.saveAssign = function() {
+        const assigned = allUsers.filter(u => u.assigned);
+        const role = rolesData.find(r => r.id === currentRoleId);
+        if (role) {
+            role.count = assigned.length;
+            role.users = assigned.map(u => u.name);
+        }
+        document.querySelector('.modal-overlay.open').remove();
+        renderRoleList();
+        showToast(`已分配 ${assigned.length} 位用户`);
+    };
     </script>
 
 </body>
